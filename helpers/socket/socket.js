@@ -22,7 +22,7 @@ io.on('connection', (socket) => {
   })
   
   // Send a welcome message when client connects
-  socket.emit('welcome', { message: 'Connected to RoadSense Socket.IO server' })
+  socket.emit('welcome', { message: 'Connected to SENTRA Socket.IO server' })
 })
 
 console.log('✅ Socket.IO server ready and listening for connections on port 4001')

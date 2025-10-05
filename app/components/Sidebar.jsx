@@ -37,7 +37,7 @@ const Sidebar = () => {
       <div className='px-10'>
         <div className='flex gap-2 items-center mt-5'>
           <Image src='/images/logo.png' alt='logo' width={70} height={70} />
-          <h1 className='text-3xl font-semibold'>RoadSense</h1>
+          <h1 className='text-3xl font-semibold'>SENTRA</h1>
         </div>
 
         <div className='flex flex-col gap-5 mt-10'>

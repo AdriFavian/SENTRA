@@ -1,7 +1,7 @@
 
 export const metadata = {
-    title: 'CCTV Cameras - RoadSense',
-    description: 'Monitor Live CCTV Feeds for Instant Accident Alerts on RoadSense - Stay Safe.',
+    title: 'CCTV Cameras - SENTRA',
+    description: 'Monitor Live CCTV Feeds for Instant Accident Alerts on SENTRA - Stay Safe.',
 }
 
 export default function RootLayout({ children }) {

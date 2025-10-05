@@ -1,6 +1,6 @@
 # MongoDB to PostgreSQL Migration Guide
 
-This guide will help you migrate your RoadSense application from MongoDB to PostgreSQL.
+This guide will help you migrate your SENTRA application from MongoDB to PostgreSQL.
 
 ## Prerequisites
 
@@ -10,9 +10,9 @@ This guide will help you migrate your RoadSense application from MongoDB to Post
 
 2. **Database Setup**: Create a new PostgreSQL database for your application
    ```sql
-   CREATE DATABASE roadsense;
-   CREATE USER roadsense_user WITH PASSWORD 'your_password';
-   GRANT ALL PRIVILEGES ON DATABASE roadsense TO roadsense_user;
+   CREATE DATABASE SENTRA;
+   CREATE USER SENTRA_user WITH PASSWORD 'your_password';
+   GRANT ALL PRIVILEGES ON DATABASE SENTRA TO SENTRA_user;
    ```
 
 ## Migration Steps
@@ -23,12 +23,12 @@ Update your `.env.local` file with PostgreSQL connection details:
 
 ```bash
 # PostgreSQL connection string
-DATABASE_URL=postgresql://username:password@localhost:5432/roadsense
+DATABASE_URL=postgresql://username:password@localhost:5432/SENTRA
 
 # Alternative connection parameters (if not using DATABASE_URL):
 # DB_HOST=localhost
 # DB_PORT=5432
-# DB_NAME=roadsense
+# DB_NAME=SENTRA
 # DB_USER=username
 # DB_PASSWORD=password
 ```
@@ -61,8 +61,8 @@ If you have existing data in MongoDB that you want to migrate:
 
 1. **Export MongoDB data**:
    ```bash
-   mongoexport --db roadsense --collection cctvs --out cctvs.json
-   mongoexport --db roadsense --collection accidents --out accidents.json
+   mongoexport --db SENTRA --collection cctvs --out cctvs.json
+   mongoexport --db SENTRA --collection accidents --out accidents.json
    ```
 
 2. **Create a custom import script** or manually insert the data into PostgreSQL tables

@@ -11,8 +11,8 @@ const poppins = Poppins({
 })
 
 export const metadata = {
-  title: 'Roadsense - Stay Safe, Instant Alert',
-  description: 'Stay Safe with RoadSense - Get Instant Alerts for Accidents.',
+  title: 'SENTRA - Stay Safe, Instant Alert',
+  description: 'Stay Safe with SENTRA - Get Instant Alerts for Accidents.',
 }
 
 export default function RootLayout({ children }) {

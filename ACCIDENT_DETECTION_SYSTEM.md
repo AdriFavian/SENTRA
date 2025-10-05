@@ -51,7 +51,7 @@ cctvs(
 
 ### Environment Variables (.env.local)
 ```env
-DATABASE_URL=postgresql://postgres:0000@localhost:5432/roadsense
+DATABASE_URL=postgresql://postgres:0000@localhost:5432/SENTRA
 NEXTAUTH_SECRET=your-secret-here
 NEXTAUTH_URL=http://localhost:3000
 NEXT_PUBLIC_SOCKET_URL=http://localhost:4001
