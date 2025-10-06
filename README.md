@@ -117,7 +117,7 @@ Now, SENTRA should be up and running, integrated with your CCTV cameras, and cap
 
 ## Support and Contact
 
-For any questions, support, or inquiries, please contact our team at [meprazhant@gmail.com](mailto:meprazhant@gmail.com), [achyutchapagain05@gmail.com](mailto:achyutchapagain05@gmail.com), [shameerkharel2@gmail.com](mailto:shameerkharel2@gmail.com), [rejensraya@gmail.com](mailto:rejensraya@gmail.com)
+For any questions, support, or inquiries, please contact our team at [meprazhant@gmail.com](mailto:meprazhant@gmail.com), [achyutchapagain05@gmail.com](mailto:achyutchapagain05@gmail.com), [shameerkharel2@gmail.com](mailto:shameerkharel2@gmail.com), [rejensraya@gmail.com](mailto:rejensraya@gmail.com), [Noklent Fardian] (noklent320@gmail.com)
 
 ## License
 
