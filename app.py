@@ -20,7 +20,7 @@ os.makedirs(snapshot_dir, exist_ok=True)
 frame_count = 0  # Initialize frame_count outside of any function
 
 
-model = YOLO("acc_best.pt")
+model = YOLO("testkan_ini.pt")
 
 frame_skip = 5
 
@@ -177,7 +177,7 @@ def video2():
 
 @app.route('/test')
 def video3():
-    video_path = "video/1558.mp4"  
+    video_path = "video/ahmad_yani.mp4"  
     custom_text = "test"
     return Response(generate_frames(video_path, custom_text), mimetype='multipart/x-mixed-replace; boundary=frame')
 
