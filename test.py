@@ -1,4 +1,4 @@
 from ultralytics import YOLO
 
-model = YOLO("acc_best.pt")
+model = YOLO("testkan_ini.pt")
 print(model.names)
