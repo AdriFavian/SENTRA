@@ -20,11 +20,15 @@ os.makedirs(snapshot_dir, exist_ok=True)
 frame_count = 0  # Initialize frame_count outside of any function
 
 
-model = YOLO("testkan_ini.pt")
+model = YOLO("test4.pt")
 
 frame_skip = 5
 
-classnames = ["moderate-accident", "fatal-accident", "Normal"]
+# YOLO class names - actual classes from your model
+classnames = ["benturan", "crash", "kendaraan-besar", "manusia", "mobil-mainan", "roda-2", "roda-4"]
+
+# Accident-related classes
+ACCIDENT_CLASSES = ["benturan", "crash"]
 
 #this function sends http post request to the server
 def send_accident_data_to_server(accident_data, headers=None):
@@ -165,19 +169,19 @@ def index():
 # hosting the video in the different path and passsing the video link to the path.
 @app.route('/1')
 def video1():
-    video_path = "video/mainan1.mp4"  
+    video_path = "http://stream.cctv.malangkota.go.id/WebRTCApp/play.html?name=307023650278212238808482"  
     custom_text = "Test Di poltek"
     return Response(generate_frames(video_path, custom_text), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/2')
 def video2():
-    video_path = "video/koteshore.mp4"  
+    video_path = "http://stream.cctv.malangkota.go.id/WebRTCApp/play.html?name=307023650278212238808482"  
     custom_text = "2"
     return Response(generate_frames(video_path, custom_text), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/test')
 def video3():
-    video_path = "video/ahmad_yani.mp4"  
+    video_path = "http://stream.cctv.malangkota.go.id/WebRTCApp/play.html?name=307023650278212238808482"  
     custom_text = "test"
     return Response(generate_frames(video_path, custom_text), mimetype='multipart/x-mixed-replace; boundary=frame')
 
