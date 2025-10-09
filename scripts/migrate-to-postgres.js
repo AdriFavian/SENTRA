@@ -93,9 +93,9 @@ async function setupDatabase() {
       console.log('📝 Inserting sample CCTV data...')
       await client.query(`
         INSERT INTO cctvs (ip_address, latitude, longitude, status, city) VALUES
-        ('http://127.0.0.1:49/1', -7.9666, 112.6326, true, 'Kabupaten Malang'),
-        ('http://127.0.0.1:49/2', -7.9797, 112.6304, true, 'Kota Malang'),
-        ('http://127.0.0.1:49/test', -7.9553, 112.6092, true, 'Kabupaten Malang')
+        ('http://127.0.0.1:5000/1', -7.9666, 112.6326, true, 'Kabupaten Malang'),
+        ('http://127.0.0.1:5000/2', -7.9797, 112.6304, true, 'Kota Malang'),
+        ('http://127.0.0.1:5000/test', -7.9553, 112.6092, true, 'Kabupaten Malang')
       `)
       console.log('✅ Sample CCTV data inserted')
     }

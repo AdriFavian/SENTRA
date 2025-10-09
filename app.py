@@ -121,8 +121,16 @@ def generate_frames(video_path, custom_text, camera_id=None, show_boxes=True):
                     class_name = model.names[int(c)]
                     confidence = float(r.boxes.conf[idx]) if len(r.boxes.conf) > idx else 0.0
 
-                    # Check if accident class detected
-                    if any(accident_class in class_name.lower() for accident_class in ['moderate-accident', 'fatal-accident', 'crash', 'benturan']):
+                    # Check if accident class detected with confidence threshold
+                    if 'crash' in class_name.lower() or 'benturan' in class_name.lower():
+                        # Only detect crash/benturan if confidence > 81%
+                        if confidence > 0.81:
+                            accident_detected = True
+                            if confidence > max_confidence:
+                                max_confidence = confidence
+                                detected_class = class_name
+                    elif any(accident_class in class_name.lower() for accident_class in ['moderate-accident', 'fatal-accident']):
+                        # Other accident types don't need threshold
                         accident_detected = True
                         if confidence > max_confidence:
                             max_confidence = confidence
@@ -130,13 +138,15 @@ def generate_frames(video_path, custom_text, camera_id=None, show_boxes=True):
 
             # Process accident detection
             if accident_detected and not snapshot_taken and (current_time - last_detection_time > detection_cooldown):
-                print(f"🚨 Accident Detected: {detected_class} with confidence {max_confidence:.2f}")
+                print(f"🚨 Accident Detected: {detected_class} with confidence {max_confidence:.2f} ({max_confidence*100:.1f}%)")
                
                 # Determine severity based on detected class
                 if "fatal-accident" in detected_class.lower():
                     severity = "Fatal"
                 elif "moderate-accident" in detected_class.lower() or "crash" in detected_class.lower():
                     severity = "Serious"
+                elif "benturan" in detected_class.lower():
+                    severity = "Normal"
                 else:
                     severity = "Normal"
                
@@ -151,18 +161,22 @@ def generate_frames(video_path, custom_text, camera_id=None, show_boxes=True):
                 snapshot_taken = True
                 last_detection_time = current_time
 
-                # Prepare IP address
-                ipaddress = f"http://127.0.0.1:49/{custom_text}"
+                # Prepare IP address using camera_id instead of custom_text
+                ipaddress = f"http://127.0.0.1:5000/{camera_id}"
                
                 accident_data = {
                     "photos": f"snapshots/snapshot_{unique_number}.jpg",
                     "ipAddress": ipaddress,
                     "severity": severity,
-                    "description": f"Accident detected: {detected_class}",
+                    "description": f"{detected_class} detected with {max_confidence*100:.1f}% confidence",
                     "confidence": float(max_confidence)
                 }
                
-                print(f"📤 Sending accident data: {accident_data}")
+                print(f"📤 Sending accident data to database:")
+                print(f"   Class: {detected_class}")
+                print(f"   Confidence: {max_confidence*100:.1f}%")
+                print(f"   Severity: {severity}")
+                print(f"   Snapshot: snapshot_{unique_number}.jpg")
                
                 # Send to server (which will also emit Socket.IO event)
                 send_accident_data_to_server(accident_data)
