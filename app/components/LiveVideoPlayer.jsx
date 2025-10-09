@@ -14,17 +14,30 @@ export default function LiveVideoPlayer({
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const hlsRef = useRef(null)
+  const imgRef = useRef(null)
   
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [showBoxes, setShowBoxes] = useState(showDetectionBoxes)
   const [error, setError] = useState(null)
   const [detections, setDetections] = useState([])
+  const [useMjpegFallback, setUseMjpegFallback] = useState(false)
 
   useEffect(() => {
     const video = videoRef.current
     
     if (!video || !streamUrl) return
+
+    // Check if this is a Flask MJPEG stream
+    const isFlaskStream = streamUrl.includes('127.0.0.1:5000') || streamUrl.includes('localhost:5000')
+    
+    if (isFlaskStream) {
+      // Flask MJPEG streams work better with img tag
+      console.log('Detected Flask MJPEG stream, using img fallback')
+      setUseMjpegFallback(true)
+      setIsPlaying(true)
+      return
+    }
 
     // Handle HLS streams
     if (streamUrl.includes('.m3u8')) {
@@ -66,13 +79,30 @@ export default function LiveVideoPlayer({
         setError('HLS not supported in this browser')
       }
     } else if (streamUrl.startsWith('http')) {
-      // Direct stream (MJPEG, MP4, etc.)
+      // Direct stream (MP4, WebM, etc.) - not MJPEG
       video.src = streamUrl
-      video.play().catch(err => {
-        console.error('Autoplay failed:', err)
-        setIsPlaying(false)
-      })
-      setIsPlaying(true)
+      
+      const handleError = () => {
+        console.warn('Video element failed, trying MJPEG fallback')
+        setUseMjpegFallback(true)
+        setIsPlaying(true)
+      }
+      
+      const handleCanPlay = () => {
+        video.play().catch(err => {
+          console.error('Autoplay failed:', err)
+          setIsPlaying(false)
+        })
+        setIsPlaying(true)
+      }
+      
+      video.addEventListener('error', handleError)
+      video.addEventListener('canplay', handleCanPlay)
+      
+      return () => {
+        video.removeEventListener('error', handleError)
+        video.removeEventListener('canplay', handleCanPlay)
+      }
     } else {
       setError('Unsupported stream format')
     }
@@ -204,13 +234,24 @@ export default function LiveVideoPlayer({
 
   return (
     <div className="relative bg-gray-900 rounded-lg overflow-hidden aspect-video group">
-      {/* Video Element */}
-      <video
-        ref={videoRef}
-        className="w-full h-full object-contain"
-        muted={isMuted}
-        playsInline
-      />
+      {/* MJPEG Image Fallback (for Flask streams) */}
+      {useMjpegFallback ? (
+        <img
+          ref={imgRef}
+          src={streamUrl}
+          alt={cameraName}
+          className="w-full h-full object-contain"
+          onError={() => setError('Failed to load stream')}
+        />
+      ) : (
+        /* Video Element (for HLS and regular video streams) */
+        <video
+          ref={videoRef}
+          className="w-full h-full object-contain"
+          muted={isMuted}
+          playsInline
+        />
+      )}
 
       {/* Detection Canvas Overlay */}
       {showBoxes && (
@@ -230,30 +271,32 @@ export default function LiveVideoPlayer({
       {isPlaying && (
         <div className="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded-md text-xs font-bold flex items-center gap-2">
           <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-          LIVE
+          LIVE {useMjpegFallback && '(MJPEG)'}
         </div>
       )}
 
       {/* Controls */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={togglePlay}
-              className="text-white hover:text-blue-400 transition"
-            >
-              {isPlaying ? <FiPause className="w-6 h-6" /> : <FiPlay className="w-6 h-6" />}
-            </button>
-            
-            <button
-              onClick={toggleMute}
-              className="text-white hover:text-blue-400 transition"
-            >
-              {isMuted ? <FiVolumeX className="w-6 h-6" /> : <FiVolume2 className="w-6 h-6" />}
-            </button>
-          </div>
+          {!useMjpegFallback && (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={togglePlay}
+                className="text-white hover:text-blue-400 transition"
+              >
+                {isPlaying ? <FiPause className="w-6 h-6" /> : <FiPlay className="w-6 h-6" />}
+              </button>
+              
+              <button
+                onClick={toggleMute}
+                className="text-white hover:text-blue-400 transition"
+              >
+                {isMuted ? <FiVolumeX className="w-6 h-6" /> : <FiVolume2 className="w-6 h-6" />}
+              </button>
+            </div>
+          )}
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 ml-auto">
             <label className="flex items-center gap-2 text-white text-sm cursor-pointer">
               <input
                 type="checkbox"
@@ -264,12 +307,14 @@ export default function LiveVideoPlayer({
               Show Detections
             </label>
 
-            <button
-              onClick={toggleFullscreen}
-              className="text-white hover:text-blue-400 transition"
-            >
-              <FiMaximize className="w-6 h-6" />
-            </button>
+            {!useMjpegFallback && (
+              <button
+                onClick={toggleFullscreen}
+                className="text-white hover:text-blue-400 transition"
+              >
+                <FiMaximize className="w-6 h-6" />
+              </button>
+            )}
           </div>
         </div>
       </div>
