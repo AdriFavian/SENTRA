@@ -140,17 +140,7 @@ export default function CctvMonitorGrid({ cctvs: initialCctvs }) {
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            Grid View
-          </button>
-          <button
-            onClick={() => setViewMode('single')}
-            className={`px-4 py-2 rounded-lg transition ${
-              viewMode === 'single' 
-                ? 'bg-blue-500 text-white' 
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Single View
+            Grid View 
           </button>
         </div>
 

@@ -30,7 +30,7 @@ const AccidentList = ({ accident, index }) => {
           {dayjs(accident.createdAt).format('DD, MMMM YYYY')}
         </td>
         <td className='px-6 py-4'>
-          {dayjs(accident.createdAt).format('hh:mm A')}
+          {dayjs(accident.createdAt).format('hh:mm:ss A')}
         </td>
 
         <td className='px-6 py-4'>{accident.cctv?.city}</td>
