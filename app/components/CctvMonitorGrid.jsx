@@ -20,6 +20,27 @@ export default function CctvMonitorGrid({ cctvs: initialCctvs }) {
     status: true
   })
 
+  // Helper function to determine if stream needs proxy for detection
+  const getStreamUrl = (ipAddress, cameraId, cameraName) => {
+    // Check if this is a Flask internal stream (already has detection)
+    if (ipAddress.includes('127.0.0.1:5000') || ipAddress.includes('localhost:5000')) {
+      return ipAddress
+    }
+    
+    // Check if it's an external MJPEG stream that needs detection
+    // Format: http://192.168.x.x:port/?action=stream or similar
+    if (ipAddress.includes('action=stream') || 
+        ipAddress.match(/https?:\/\/\d+\.\d+\.\d+\.\d+/) ||
+        ipAddress.includes('.m3u8')) {
+      // Route through Flask proxy for detection
+      const encodedUrl = encodeURIComponent(ipAddress)
+      return `http://127.0.0.1:5000/proxy?url=${encodedUrl}&camera_id=${cameraId}&name=${encodeURIComponent(cameraName)}`
+    }
+    
+    // Default: return original URL
+    return ipAddress
+  }
+
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this CCTV?')) return
 
@@ -289,7 +310,7 @@ export default function CctvMonitorGrid({ cctvs: initialCctvs }) {
           {selectedCctv && (
             <div className="bg-white shadow rounded-lg p-6">
               <LiveVideoPlayer
-                streamUrl={selectedCctv.ipAddress}
+                streamUrl={getStreamUrl(selectedCctv.ipAddress, selectedCctv._id, selectedCctv.city)}
                 cameraName={selectedCctv.city}
                 cameraId={selectedCctv._id}
                 showDetectionBoxes={true}
@@ -329,7 +350,7 @@ export default function CctvMonitorGrid({ cctvs: initialCctvs }) {
               <div className="p-4">
                 {cctv.status ? (
                   <LiveVideoPlayer
-                    streamUrl={cctv.ipAddress}
+                    streamUrl={getStreamUrl(cctv.ipAddress, cctv._id, cctv.city)}
                     cameraName={cctv.city}
                     cameraId={cctv._id}
                     showDetectionBoxes={true}
