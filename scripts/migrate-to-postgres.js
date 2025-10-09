@@ -100,6 +100,24 @@ async function setupDatabase() {
       console.log('✅ Sample CCTV data inserted')
     }
 
+    // Insert sample accident data if tables are empty
+    const accidentCount = await client.query('SELECT COUNT(*) FROM accidents')
+    if (parseInt(accidentCount.rows[0].count) === 0) {
+      console.log('📝 Inserting sample accident data...')
+      await client.query(`
+        INSERT INTO accidents (accident_classification, photos, cctv_id, created_at) VALUES
+        ('Fatal', 'snapshots/snapshot_1759581288604278.jpg', 1, CURRENT_TIMESTAMP - INTERVAL '5 hours'),
+        ('Serious', 'snapshots/snapshot_1759581289263517.jpg', 1, CURRENT_TIMESTAMP - INTERVAL '4 hours'),
+        ('Normal', 'snapshots/snapshot_1759587378590178.jpg', 2, CURRENT_TIMESTAMP - INTERVAL '3 hours'),
+        ('Serious', 'snapshots/snapshot_1759587379996322.jpg', 2, CURRENT_TIMESTAMP - INTERVAL '2 hours'),
+        ('Fatal', 'snapshots/snapshot_1759587727340538.jpg', 3, CURRENT_TIMESTAMP - INTERVAL '1 hour'),
+        ('Normal', 'snapshots/snapshot_1759587728758543.jpg', 3, CURRENT_TIMESTAMP - INTERVAL '30 minutes'),
+        ('Serious', 'snapshots/snapshot_1759648019108019.jpg', 1, CURRENT_TIMESTAMP - INTERVAL '15 minutes'),
+        ('Fatal', 'snapshots/snapshot_1759648061413889.jpg', 2, CURRENT_TIMESTAMP - INTERVAL '10 minutes')
+      `)
+      console.log('✅ Sample accident data inserted')
+    }
+
     client.release()
     console.log('🎉 Database setup completed successfully!')
     console.log('')
