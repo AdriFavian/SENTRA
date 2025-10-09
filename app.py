@@ -20,11 +20,15 @@ os.makedirs(snapshot_dir, exist_ok=True)
 frame_count = 0  # Initialize frame_count outside of any function
 
 
-model = YOLO("testkan_ini.pt")
+model = YOLO("test5.pt")
 
 frame_skip = 5
 
-classnames = ["moderate-accident", "fatal-accident", "Normal"]
+# YOLO class names - actual classes from your model
+classnames = ["benturan", "crash", "kendaraan-besar", "manusia", "mobil-mainan", "roda-2", "roda-4"]
+
+# Accident-related classes
+ACCIDENT_CLASSES = ["benturan", "crash"]
 
 #this function sends http post request to the server
 def send_accident_data_to_server(accident_data, headers=None):

@@ -35,7 +35,7 @@ async function createTables() {
     await client.query(`
       CREATE TABLE IF NOT EXISTS cctvs (
         id SERIAL PRIMARY KEY,
-        ip_address VARCHAR(255) UNIQUE NOT NULL,
+        stream_url VARCHAR(255) UNIQUE NOT NULL,
         latitude DECIMAL(10, 8) NOT NULL,
         longitude DECIMAL(11, 8) NOT NULL,
         status BOOLEAN DEFAULT true NOT NULL,
