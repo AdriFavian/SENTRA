@@ -20,7 +20,7 @@ os.makedirs(snapshot_dir, exist_ok=True)
 frame_count = 0  # Initialize frame_count outside of any function
 
 
-model = YOLO("test4.pt")
+model = YOLO("test5.pt")
 
 frame_skip = 5
 
@@ -169,19 +169,19 @@ def index():
 # hosting the video in the different path and passsing the video link to the path.
 @app.route('/1')
 def video1():
-    video_path = "http://stream.cctv.malangkota.go.id/WebRTCApp/play.html?name=307023650278212238808482"  
+    video_path = "video/mainan1.mp4"  
     custom_text = "Test Di poltek"
     return Response(generate_frames(video_path, custom_text), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/2')
 def video2():
-    video_path = "http://stream.cctv.malangkota.go.id/WebRTCApp/play.html?name=307023650278212238808482"  
+    video_path = "video/koteshore.mp4"  
     custom_text = "2"
     return Response(generate_frames(video_path, custom_text), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/test')
 def video3():
-    video_path = "http://stream.cctv.malangkota.go.id/WebRTCApp/play.html?name=307023650278212238808482"  
+    video_path = "video/ahmad_yani.mp4"  
     custom_text = "test"
     return Response(generate_frames(video_path, custom_text), mimetype='multipart/x-mixed-replace; boundary=frame')
 

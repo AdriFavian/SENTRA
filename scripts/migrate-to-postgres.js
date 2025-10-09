@@ -33,7 +33,7 @@ async function setupDatabase() {
     await client.query(`
       CREATE TABLE IF NOT EXISTS cctvs (
         id SERIAL PRIMARY KEY,
-        stream_url VARCHAR(255) UNIQUE NOT NULL,
+        ip_address VARCHAR(255) UNIQUE NOT NULL,
         latitude DECIMAL(10, 8) NOT NULL,
         longitude DECIMAL(11, 8) NOT NULL,
         status BOOLEAN DEFAULT true NOT NULL,
@@ -92,10 +92,10 @@ async function setupDatabase() {
     if (parseInt(cctvCount.rows[0].count) === 0) {
       console.log('📝 Inserting sample CCTV data...')
       await client.query(`
-        INSERT INTO cctvs (stream_url, latitude, longitude, status, city) VALUES
-        ('http://stream.cctv.malangkota.go.id/WebRTCApp/play.html?name=307023650278212238808482', -7.9666, 112.6326, true, 'Kabupaten Malang'),
-        ('http://stream.cctv.malangkota.go.id/WebRTCApp/play.html?name=307023650278212238808482', -7.9797, 112.6304, true, 'Kota Malang'),
-        ('http://stream.cctv.malangkota.go.id/WebRTCApp/play.html?name=307023650278212238808482', -7.9553, 112.6092, true, 'Kabupaten Malang')
+        INSERT INTO cctvs (ip_address, latitude, longitude, status, city) VALUES
+        ('http://127.0.0.1:49/1', -7.9666, 112.6326, true, 'Kabupaten Malang'),
+        ('http://127.0.0.1:49/2', -7.9797, 112.6304, true, 'Kota Malang'),
+        ('http://127.0.0.1:49/test', -7.9553, 112.6092, true, 'Kabupaten Malang')
       `)
       console.log('✅ Sample CCTV data inserted')
     }
