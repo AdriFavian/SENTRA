@@ -28,7 +28,7 @@ ChartJS.register(
   Legend
 )
 
-export default function AccidentStatistics({ initialStats }) {
+export default function AccidentStatistics({ initialStats, weeklyData }) {
   const [stats, setStats] = useState(initialStats)
   const [period, setPeriod] = useState('daily')
   const [loading, setLoading] = useState(false)
@@ -50,6 +50,21 @@ export default function AccidentStatistics({ initialStats }) {
     fetchStats(period)
   }, [period])
 
+  // Weekly accidents data (Monday-Sunday)
+  const weeklyAccidentsData = {
+    labels: weeklyData?.map(d => d.day) || [],
+    datasets: [
+      {
+        label: 'Accidents',
+        data: weeklyData?.map(d => d.count) || [],
+        backgroundColor: 'rgba(99, 102, 241, 0.8)',
+        borderColor: 'rgba(99, 102, 241, 1)',
+        borderWidth: 2,
+        borderRadius: 6,
+      },
+    ],
+  }
+
   const severityData = {
     labels: stats?.severity?.map(s => s.severity) || [],
     datasets: [
@@ -57,16 +72,16 @@ export default function AccidentStatistics({ initialStats }) {
         label: 'Accidents by Severity',
         data: stats?.severity?.map(s => parseInt(s.count)) || [],
         backgroundColor: [
-          'rgba(239, 68, 68, 0.8)', // Fatal - red
-          'rgba(251, 146, 60, 0.8)', // Serious - orange
-          'rgba(34, 197, 94, 0.8)', // Normal - green
+          'rgba(220, 38, 38, 0.85)', // Fatal - red
+          'rgba(251, 146, 60, 0.85)', // Serious - orange
+          'rgba(34, 197, 94, 0.85)', // Normal - green
         ],
         borderColor: [
-          'rgba(239, 68, 68, 1)',
+          'rgba(220, 38, 38, 1)',
           'rgba(251, 146, 60, 1)',
           'rgba(34, 197, 94, 1)',
         ],
-        borderWidth: 1,
+        borderWidth: 2,
       },
     ],
   }
@@ -77,9 +92,10 @@ export default function AccidentStatistics({ initialStats }) {
       {
         label: 'Accidents',
         data: stats?.timeDistribution?.map(t => t.count) || [],
-        backgroundColor: 'rgba(59, 130, 246, 0.8)',
-        borderColor: 'rgba(59, 130, 246, 1)',
-        borderWidth: 1,
+        backgroundColor: 'rgba(14, 165, 233, 0.8)',
+        borderColor: 'rgba(14, 165, 233, 1)',
+        borderWidth: 2,
+        borderRadius: 6,
       },
     ],
   }
@@ -95,8 +111,12 @@ export default function AccidentStatistics({ initialStats }) {
         data: stats?.trend?.map(t => t.count) || [],
         fill: true,
         borderColor: 'rgb(99, 102, 241)',
-        backgroundColor: 'rgba(99, 102, 241, 0.2)',
-        tension: 0.4,
+        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+        tension: 0.3,
+        borderWidth: 2,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        pointBackgroundColor: 'rgb(99, 102, 241)',
       },
     ],
   }
@@ -108,12 +128,21 @@ export default function AccidentStatistics({ initialStats }) {
         label: 'Accidents',
         data: stats?.topLocations?.slice(0, 5).map(l => l.count) || [],
         backgroundColor: [
-          'rgba(244, 63, 94, 0.8)',
-          'rgba(251, 146, 60, 0.8)',
-          'rgba(234, 179, 8, 0.8)',
-          'rgba(34, 197, 94, 0.8)',
-          'rgba(59, 130, 246, 0.8)',
+          'rgba(239, 68, 68, 0.85)',
+          'rgba(249, 115, 22, 0.85)',
+          'rgba(234, 179, 8, 0.85)',
+          'rgba(34, 197, 94, 0.85)',
+          'rgba(59, 130, 246, 0.85)',
         ],
+        borderColor: [
+          'rgba(239, 68, 68, 1)',
+          'rgba(249, 115, 22, 1)',
+          'rgba(234, 179, 8, 1)',
+          'rgba(34, 197, 94, 1)',
+          'rgba(59, 130, 246, 1)',
+        ],
+        borderWidth: 2,
+        borderRadius: 6,
       },
     ],
   }
@@ -123,14 +152,44 @@ export default function AccidentStatistics({ initialStats }) {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top',
+        display: false,
       },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        padding: 12,
+        cornerRadius: 8,
+        titleFont: {
+          size: 13,
+          weight: 'bold'
+        },
+        bodyFont: {
+          size: 12
+        }
+      }
     },
     scales: {
       y: {
         beginAtZero: true,
         ticks: {
-          precision: 0
+          precision: 0,
+          font: {
+            size: 11
+          }
+        },
+        grid: {
+          color: 'rgba(0, 0, 0, 0.05)',
+          drawBorder: false
+        }
+      },
+      x: {
+        ticks: {
+          font: {
+            size: 11
+          }
+        },
+        grid: {
+          display: false,
+          drawBorder: false
         }
       }
     }
@@ -141,49 +200,41 @@ export default function AccidentStatistics({ initialStats }) {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'right',
+        position: 'bottom',
+        labels: {
+          padding: 15,
+          font: {
+            size: 12
+          },
+          usePointStyle: true,
+          pointStyle: 'circle'
+        }
       },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        padding: 12,
+        cornerRadius: 8,
+        titleFont: {
+          size: 13,
+          weight: 'bold'
+        },
+        bodyFont: {
+          size: 12
+        }
+      }
     },
   }
 
   return (
     <div className="space-y-6">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white shadow rounded-lg p-6 border-l-4 border-red-500">
-          <h3 className="text-gray-500 text-sm font-medium">Total Accidents</h3>
-          <p className="text-3xl font-bold text-gray-800 mt-2">{stats?.total || 0}</p>
-        </div>
-        
-        <div className="bg-white shadow rounded-lg p-6 border-l-4 border-blue-500">
-          <h3 className="text-gray-500 text-sm font-medium">Active CCTVs</h3>
-          <p className="text-3xl font-bold text-gray-800 mt-2">{stats?.cctvs?.active || 0}</p>
-          <p className="text-xs text-gray-500 mt-1">of {stats?.cctvs?.total || 0} total</p>
-        </div>
-        
-        <div className="bg-white shadow rounded-lg p-6 border-l-4 border-orange-500">
-          <h3 className="text-gray-500 text-sm font-medium">Serious Accidents</h3>
-          <p className="text-3xl font-bold text-gray-800 mt-2">
-            {stats?.severity?.find(s => s.severity === 'Serious')?.count || 0}
-          </p>
-        </div>
-        
-        <div className="bg-white shadow rounded-lg p-6 border-l-4 border-rose-600">
-          <h3 className="text-gray-500 text-sm font-medium">Fatal Accidents</h3>
-          <p className="text-3xl font-bold text-gray-800 mt-2">
-            {stats?.severity?.find(s => s.severity === 'Fatal')?.count || 0}
-          </p>
-        </div>
-      </div>
-
-      {/* Period Selector */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-800">Accident Analytics</h2>
+      {/* Header with Period Selector */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h2 className="text-xl font-bold text-gray-900">Analytics Overview</h2>
         <div className="flex gap-2 items-center">
           <select
             value={period}
             onChange={(e) => setPeriod(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
           >
             <option value="daily">Last 24 Hours</option>
             <option value="weekly">Last 7 Days</option>
@@ -193,86 +244,117 @@ export default function AccidentStatistics({ initialStats }) {
           <button
             onClick={() => fetchStats(period)}
             disabled={loading}
-            className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+            className="p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+            title="Refresh data"
           >
-            <FiRefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+            <FiRefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
 
       {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* Weekly Accidents (Monday-Sunday) */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="mb-4">
+            <h3 className="text-base font-semibold text-gray-900">Accidents by Day</h3>
+            <p className="text-xs text-gray-500 mt-1">Weekly distribution (Sun - Sat)</p>
+          </div>
+          <div className="h-64">
+            <Bar data={weeklyAccidentsData} options={chartOptions} />
+          </div>
+        </div>
+
         {/* Severity Distribution */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-800">Severity Distribution</h3>
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="mb-4">
+            <h3 className="text-base font-semibold text-gray-900">Severity Distribution</h3>
+            <p className="text-xs text-gray-500 mt-1">Classification breakdown</p>
+          </div>
           <div className="h-64">
             <Pie data={severityData} options={pieOptions} />
           </div>
         </div>
 
         {/* Top Locations */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-800">Top Accident Locations</h3>
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="mb-4">
+            <h3 className="text-base font-semibold text-gray-900">Top Locations</h3>
+            <p className="text-xs text-gray-500 mt-1">High-risk areas</p>
+          </div>
           <div className="h-64">
             <Bar data={topLocationsData} options={chartOptions} />
           </div>
         </div>
 
         {/* Time Distribution */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-800">
-            Time Distribution ({period === 'daily' ? 'Hourly' : period === 'weekly' ? 'Daily' : 'Daily'})
-          </h3>
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="mb-4">
+            <h3 className="text-base font-semibold text-gray-900">
+              {period === 'daily' ? 'Hourly Distribution' : 'Time Distribution'}
+            </h3>
+            <p className="text-xs text-gray-500 mt-1">
+              {period === 'daily' ? 'Last 24 hours' : `Last ${period === 'weekly' ? '7' : '30'} days`}
+            </p>
+          </div>
           <div className="h-64">
             <Bar data={timeDistributionData} options={chartOptions} />
           </div>
         </div>
 
-        {/* Trend Line */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-800">30-Day Trend</h3>
-          <div className="h-64">
-            <Line data={trendData} options={chartOptions} />
+        {/* Trend Line - Full Width */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5 lg:col-span-2">
+          <div className="mb-4">
+            <h3 className="text-base font-semibold text-gray-900">30-Day Trend</h3>
+            <p className="text-xs text-gray-500 mt-1">Historical accident pattern</p>
+          </div>
+          <div className="h-72">
+            <Line data={trendData} options={{...chartOptions, plugins: {...chartOptions.plugins, legend: { display: false }}}} />
           </div>
         </div>
       </div>
 
       {/* Top Locations Table */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-4 text-gray-800">Accident Hotspots</h3>
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-200">
+          <h3 className="text-base font-semibold text-gray-900">Accident Hotspots</h3>
+          <p className="text-xs text-gray-500 mt-1">Top 10 locations with most incidents</p>
+        </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                   Rank
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                   Location
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                   IP Address
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                   Accidents
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-gray-100">
               {stats?.topLocations?.slice(0, 10).map((location, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    #{index + 1}
+                <tr key={index} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-5 py-3 whitespace-nowrap">
+                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 text-sm font-semibold text-gray-700">
+                      {index + 1}
+                    </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-5 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
                     {location.city || 'Unknown'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-5 py-3 whitespace-nowrap text-sm text-gray-600 font-mono">
                     {location.ipAddress}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                      {location.count}
+                  <td className="px-5 py-3 whitespace-nowrap">
+                    <span className="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700">
+                      {location.count} {location.count === 1 ? 'incident' : 'incidents'}
                     </span>
                   </td>
                 </tr>

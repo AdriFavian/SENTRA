@@ -297,15 +297,6 @@ export default function LiveVideoPlayer({
           )}
 
           <div className="flex items-center gap-3 ml-auto">
-            <label className="flex items-center gap-2 text-white text-sm cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showBoxes}
-                onChange={(e) => setShowBoxes(e.target.checked)}
-                className="w-4 h-4 rounded"
-              />
-              Show Detections
-            </label>
 
             {!useMjpegFallback && (
               <button

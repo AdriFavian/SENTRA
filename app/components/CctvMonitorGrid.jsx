@@ -6,7 +6,13 @@ import { FiEdit2, FiTrash2, FiEye, FiEyeOff, FiPlus } from 'react-icons/fi'
 import { MdOutlineControlCamera } from 'react-icons/md'
 
 export default function CctvMonitorGrid({ cctvs: initialCctvs }) {
-  const [cctvs, setCctvs] = useState(initialCctvs)
+  // Sort CCTVs so active ones (status: true) are always on top
+  const sortedCctvs = [...initialCctvs].sort((a, b) => {
+    if (a.status === b.status) return 0
+    return a.status ? -1 : 1
+  })
+  
+  const [cctvs, setCctvs] = useState(sortedCctvs)
   const [selectedCctv, setSelectedCctv] = useState(null)
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingCctv, setEditingCctv] = useState(null)
@@ -19,6 +25,27 @@ export default function CctvMonitorGrid({ cctvs: initialCctvs }) {
     longitude: '',
     status: true
   })
+
+  // Helper function to determine if stream needs proxy for detection
+  const getStreamUrl = (ipAddress, cameraId, cameraName) => {
+    // Check if this is a Flask internal stream (already has detection)
+    if (ipAddress.includes('127.0.0.1:5000') || ipAddress.includes('localhost:5000')) {
+      return ipAddress
+    }
+    
+    // Check if it's an external MJPEG stream that needs detection
+    // Format: http://192.168.x.x:port/?action=stream or similar
+    if (ipAddress.includes('action=stream') || 
+        ipAddress.match(/https?:\/\/\d+\.\d+\.\d+\.\d+/) ||
+        ipAddress.includes('.m3u8')) {
+      // Route through Flask proxy for detection
+      const encodedUrl = encodeURIComponent(ipAddress)
+      return `http://127.0.0.1:5000/proxy?url=${encodedUrl}&camera_id=${cameraId}&name=${encodeURIComponent(cameraName)}`
+    }
+    
+    // Default: return original URL
+    return ipAddress
+  }
 
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this CCTV?')) return
@@ -85,10 +112,22 @@ export default function CctvMonitorGrid({ cctvs: initialCctvs }) {
         const data = await response.json()
         
         if (editingCctv) {
-          setCctvs(cctvs.map(c => c._id === editingCctv._id ? data : c))
+          const updatedCctvs = cctvs.map(c => c._id === editingCctv._id ? data : c)
+          // Re-sort after update
+          const sortedCctvs = [...updatedCctvs].sort((a, b) => {
+            if (a.status === b.status) return 0
+            return a.status ? -1 : 1
+          })
+          setCctvs(sortedCctvs)
           alert('CCTV updated successfully')
         } else {
-          setCctvs([...cctvs, data])
+          const updatedCctvs = [...cctvs, data]
+          // Re-sort after adding
+          const sortedCctvs = [...updatedCctvs].sort((a, b) => {
+            if (a.status === b.status) return 0
+            return a.status ? -1 : 1
+          })
+          setCctvs(sortedCctvs)
           alert('CCTV added successfully')
         }
 
@@ -120,7 +159,13 @@ export default function CctvMonitorGrid({ cctvs: initialCctvs }) {
 
       if (response.ok) {
         const data = await response.json()
-        setCctvs(cctvs.map(c => c._id === cctv._id ? data : c))
+        const updatedCctvs = cctvs.map(c => c._id === cctv._id ? data : c)
+        // Re-sort after status toggle
+        const sortedCctvs = [...updatedCctvs].sort((a, b) => {
+          if (a.status === b.status) return 0
+          return a.status ? -1 : 1
+        })
+        setCctvs(sortedCctvs)
       }
     } catch (error) {
       console.error('Error toggling status:', error)
@@ -140,17 +185,7 @@ export default function CctvMonitorGrid({ cctvs: initialCctvs }) {
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            Grid View
-          </button>
-          <button
-            onClick={() => setViewMode('single')}
-            className={`px-4 py-2 rounded-lg transition ${
-              viewMode === 'single' 
-                ? 'bg-blue-500 text-white' 
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Single View
+            Grid View 
           </button>
         </div>
 
@@ -299,7 +334,7 @@ export default function CctvMonitorGrid({ cctvs: initialCctvs }) {
           {selectedCctv && (
             <div className="bg-white shadow rounded-lg p-6">
               <LiveVideoPlayer
-                streamUrl={selectedCctv.ipAddress}
+                streamUrl={getStreamUrl(selectedCctv.ipAddress, selectedCctv._id, selectedCctv.city)}
                 cameraName={selectedCctv.city}
                 cameraId={selectedCctv._id}
                 showDetectionBoxes={true}
@@ -339,7 +374,7 @@ export default function CctvMonitorGrid({ cctvs: initialCctvs }) {
               <div className="p-4">
                 {cctv.status ? (
                   <LiveVideoPlayer
-                    streamUrl={cctv.ipAddress}
+                    streamUrl={getStreamUrl(cctv.ipAddress, cctv._id, cctv.city)}
                     cameraName={cctv.city}
                     cameraId={cctv._id}
                     showDetectionBoxes={true}

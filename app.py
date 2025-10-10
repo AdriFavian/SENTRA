@@ -2,7 +2,7 @@ import datetime
 import cv2
 import threading
 from datetime import datetime
-from flask import Flask, render_template, Response, jsonify
+from flask import Flask, render_template, Response, jsonify, request
 from flask_cors import CORS
 from ultralytics import YOLO
 import os
@@ -10,6 +10,7 @@ import time
 import requests
 import json
 import socketio
+import numpy as np
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -34,10 +35,10 @@ model = YOLO("test5.pt")
 frame_skip = 5
 
 # YOLO class names - actual classes from your model
-classnames = ["benturan", "crash", "kendaraan-besar", "manusia", "mobil-mainan", "roda-2", "roda-4"]
+classnames = ["benturan", "crash", "kendaraan-besar", "manusia", "mobil", "roda-2", "roda-4"]
 
 # Accident-related classes
-ACCIDENT_CLASSES = ["benturan", "crash", "moderate-accident", "fatal-accident"]
+ACCIDENT_CLASSES = ["benturan", "crash"]
 
 # Store active streams
 active_streams = {}
@@ -73,13 +74,6 @@ def send_accident_data_to_server(accident_data, headers=None):
 
 
 def annotate_frame(frame, custom_text, show_boxes=True):
-    now = datetime.now()
-    current_time = now.strftime("%Y-%m-%d %H:%M:%S")
-
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    cv2.putText(frame, current_time, (10, 30), font, 1, (0, 0, 255), 2, cv2.LINE_AA)
-    cv2.putText(frame, custom_text, (10, 60), font, 1, (0, 255, 0), 2, cv2.LINE_AA)
-
     if show_boxes:
         results = model.predict(frame)
         annotated_frame = results[0].plot()
@@ -124,7 +118,7 @@ def generate_frames(video_path, custom_text, camera_id=None, show_boxes=True):
                     # Check if accident class detected with confidence threshold
                     if 'crash' in class_name.lower() or 'benturan' in class_name.lower():
                         # Only detect crash/benturan if confidence > 81%
-                        if confidence > 0.81:
+                        if confidence > 0.90:
                             accident_detected = True
                             if confidence > max_confidence:
                                 max_confidence = confidence
@@ -196,6 +190,138 @@ def generate_frames(video_path, custom_text, camera_id=None, show_boxes=True):
     cap.release()
 
 
+def generate_frames_from_mjpeg(stream_url, custom_text, camera_id=None, show_boxes=True, cctv_ip=None):
+    """
+    Process external MJPEG streams with YOLO detection
+    Supports streams like http://192.168.3.194:8080/?action=stream
+    """
+    global frame_count
+    frame_count = 0
+    snapshot_taken = False
+    last_detection_time = 0
+    detection_cooldown = 10  # seconds between detections
+    
+    print(f"📹 Starting MJPEG proxy for: {stream_url}")
+    
+    # Open the MJPEG stream
+    cap = cv2.VideoCapture(stream_url)
+    
+    if not cap.isOpened():
+        print(f"❌ Failed to open stream: {stream_url}")
+        # Return a simple error frame
+        error_frame = np.zeros((480, 640, 3), dtype=np.uint8)
+        cv2.putText(error_frame, "Failed to open stream", (50, 240), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+        _, buffer = cv2.imencode('.jpg', error_frame)
+        error_bytes = buffer.tobytes()
+        while True:
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + error_bytes + b'\r\n')
+            time.sleep(1)
+        return
+    
+    print(f"✅ Successfully connected to MJPEG stream")
+    
+    while True:
+        success, frame = cap.read()
+        
+        if not success:
+            print("⚠️ Failed to read frame, attempting to reconnect...")
+            cap.release()
+            time.sleep(1)
+            cap = cv2.VideoCapture(stream_url)
+            continue
+        
+        frame_count += 1
+        
+        if frame_count % frame_skip == 0:
+            current_time = time.time()
+            
+            # Detect accidents using YOLO
+            results = model.predict(frame)
+            accident_detected = False
+            detected_class = None
+            max_confidence = 0
+            
+            for r in results:
+                for idx, c in enumerate(r.boxes.cls):
+                    class_name = model.names[int(c)]
+                    confidence = float(r.boxes.conf[idx]) if len(r.boxes.conf) > idx else 0.0
+                    
+                    # Check if accident class detected with confidence threshold
+                    if 'crash' in class_name.lower() or 'benturan' in class_name.lower():
+                        if confidence > 0.85:
+                            accident_detected = True
+                            if confidence > max_confidence:
+                                max_confidence = confidence
+                                detected_class = class_name
+                    elif any(accident_class in class_name.lower() for accident_class in ['moderate-accident', 'fatal-accident']):
+                        accident_detected = True
+                        if confidence > max_confidence:
+                            max_confidence = confidence
+                            detected_class = class_name
+            
+            # Process accident detection
+            if accident_detected and not snapshot_taken and (current_time - last_detection_time > detection_cooldown):
+                print(f"🚨 Accident Detected: {detected_class} with confidence {max_confidence:.2f} ({max_confidence*100:.1f}%)")
+                
+                # Determine severity
+                if "fatal-accident" in detected_class.lower():
+                    severity = "Fatal"
+                elif "moderate-accident" in detected_class.lower() or "crash" in detected_class.lower():
+                    severity = "Serious"
+                elif "benturan" in detected_class.lower():
+                    severity = "Normal"
+                else:
+                    severity = "Normal"
+                
+                # Generate unique ID
+                timestamp_with_microseconds = datetime.now().timestamp()
+                microseconds = int((timestamp_with_microseconds % 1) * 1e6)
+                unique_number = int(timestamp_with_microseconds * 1e6) + microseconds
+                
+                # Take snapshot
+                snapshot_filename = os.path.join(snapshot_dir, f"snapshot_{unique_number}.jpg")
+                cv2.imwrite(snapshot_filename, frame)
+                snapshot_taken = True
+                last_detection_time = current_time
+                
+                # Prepare accident data
+                # Use an explicit CCTV IP if provided so the API can match it against the database entry
+                ipaddress = cctv_ip or stream_url
+                
+                accident_data = {
+                    "photos": f"snapshots/snapshot_{unique_number}.jpg",
+                    "ipAddress": ipaddress,
+                    "severity": severity,
+                    "description": f"{detected_class} detected with {max_confidence*100:.1f}% confidence",
+                    "confidence": float(max_confidence)
+                }
+                
+                print(f"📤 Sending accident data to database:")
+                print(f"   Class: {detected_class}")
+                print(f"   Confidence: {max_confidence*100:.1f}%")
+                print(f"   Severity: {severity}")
+                print(f"   Snapshot: snapshot_{unique_number}.jpg")
+                
+                # Send to server
+                send_accident_data_to_server(accident_data)
+            
+            # Annotate frame with detection boxes and confidence
+            if show_boxes:
+                annotated_frame = results[0].plot()
+            else:
+                annotated_frame = frame
+            
+            _, buffer = cv2.imencode('.jpg', annotated_frame)
+            frame_bytes = buffer.tobytes()
+            
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+    
+    cap.release()
+
+
 # API endpoint to get available streams
 @app.route('/api/streams')
 def get_streams():
@@ -254,6 +380,31 @@ def stream(camera_id):
     video_path = "video/mainan1.mp4"  # Default
     custom_text = f"Camera {camera_id}"
     return Response(generate_frames(video_path, custom_text, camera_id=camera_id, show_boxes=True), 
+                   mimetype='multipart/x-mixed-replace; boundary=frame')
+
+
+# Proxy endpoint for external MJPEG streams with detection
+@app.route('/proxy')
+def proxy_stream():
+    """
+    Proxy external MJPEG streams through Flask for YOLO detection
+    Usage: /proxy?url=http://192.168.3.194:8080/?action=stream&camera_id=camera1
+    """
+    import urllib.parse
+    
+    stream_url = request.args.get('url')
+    camera_id = request.args.get('camera_id', 'external')
+    custom_text = request.args.get('name', 'External Camera')
+    # Allow clients to pass the CCTV IP stored in the database so the accident record can be associated correctly
+    cctv_ip = request.args.get('ip') or request.args.get('ipAddress')
+    
+    if not stream_url:
+        return jsonify({'error': 'Missing url parameter'}), 400
+    
+    # Decode URL if it's encoded
+    stream_url = urllib.parse.unquote(stream_url)
+    
+    return Response(generate_frames_from_mjpeg(stream_url, custom_text, camera_id=camera_id, show_boxes=True, cctv_ip=cctv_ip),
                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
