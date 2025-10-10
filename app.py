@@ -197,7 +197,7 @@ def generate_frames(video_path, custom_text, camera_id=None, show_boxes=True):
     cap.release()
 
 
-def generate_frames_from_mjpeg(stream_url, custom_text, camera_id=None, show_boxes=True):
+def generate_frames_from_mjpeg(stream_url, custom_text, camera_id=None, show_boxes=True, cctv_ip=None):
     """
     Process external MJPEG streams with YOLO detection
     Supports streams like http://192.168.3.194:8080/?action=stream
@@ -294,7 +294,8 @@ def generate_frames_from_mjpeg(stream_url, custom_text, camera_id=None, show_box
                 last_detection_time = current_time
                 
                 # Prepare accident data
-                ipaddress = f"http://127.0.0.1:5000/proxy?url={stream_url}&camera_id={camera_id}"
+                # Use an explicit CCTV IP if provided so the API can match it against the database entry
+                ipaddress = cctv_ip or stream_url
                 
                 accident_data = {
                     "photos": f"snapshots/snapshot_{unique_number}.jpg",
@@ -408,6 +409,8 @@ def proxy_stream():
     stream_url = request.args.get('url')
     camera_id = request.args.get('camera_id', 'external')
     custom_text = request.args.get('name', 'External Camera')
+    # Allow clients to pass the CCTV IP stored in the database so the accident record can be associated correctly
+    cctv_ip = request.args.get('ip') or request.args.get('ipAddress')
     
     if not stream_url:
         return jsonify({'error': 'Missing url parameter'}), 400
@@ -415,7 +418,7 @@ def proxy_stream():
     # Decode URL if it's encoded
     stream_url = urllib.parse.unquote(stream_url)
     
-    return Response(generate_frames_from_mjpeg(stream_url, custom_text, camera_id=camera_id, show_boxes=True),
+    return Response(generate_frames_from_mjpeg(stream_url, custom_text, camera_id=camera_id, show_boxes=True, cctv_ip=cctv_ip),
                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
