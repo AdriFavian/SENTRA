@@ -38,7 +38,7 @@ frame_skip = 5
 classnames = ["benturan", "crash", "kendaraan-besar", "manusia", "mobil", "roda-2", "roda-4"]
 
 # Accident-related classes
-ACCIDENT_CLASSES = ["benturan", "crash", "moderate-accident", "fatal-accident"]
+ACCIDENT_CLASSES = ["benturan", "crash"]
 
 # Store active streams
 active_streams = {}
@@ -74,13 +74,6 @@ def send_accident_data_to_server(accident_data, headers=None):
 
 
 def annotate_frame(frame, custom_text, show_boxes=True):
-    now = datetime.now()
-    current_time = now.strftime("%Y-%m-%d %H:%M:%S")
-
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    cv2.putText(frame, current_time, (10, 30), font, 1, (0, 0, 255), 2, cv2.LINE_AA)
-    cv2.putText(frame, custom_text, (10, 60), font, 1, (0, 255, 0), 2, cv2.LINE_AA)
-
     if show_boxes:
         results = model.predict(frame)
         annotated_frame = results[0].plot()
@@ -125,7 +118,7 @@ def generate_frames(video_path, custom_text, camera_id=None, show_boxes=True):
                     # Check if accident class detected with confidence threshold
                     if 'crash' in class_name.lower() or 'benturan' in class_name.lower():
                         # Only detect crash/benturan if confidence > 81%
-                        if confidence > 0.81:
+                        if confidence > 0.90:
                             accident_detected = True
                             if confidence > max_confidence:
                                 max_confidence = confidence
@@ -257,7 +250,7 @@ def generate_frames_from_mjpeg(stream_url, custom_text, camera_id=None, show_box
                     
                     # Check if accident class detected with confidence threshold
                     if 'crash' in class_name.lower() or 'benturan' in class_name.lower():
-                        if confidence > 0.81:
+                        if confidence > 0.85:
                             accident_detected = True
                             if confidence > max_confidence:
                                 max_confidence = confidence
@@ -319,13 +312,6 @@ def generate_frames_from_mjpeg(stream_url, custom_text, camera_id=None, show_box
                 annotated_frame = results[0].plot()
             else:
                 annotated_frame = frame
-            
-            # Add camera name overlay
-            now = datetime.now()
-            current_time_str = now.strftime("%Y-%m-%d %H:%M:%S")
-            font = cv2.FONT_HERSHEY_SIMPLEX
-            cv2.putText(annotated_frame, current_time_str, (10, 30), font, 0.7, (0, 0, 255), 2, cv2.LINE_AA)
-            cv2.putText(annotated_frame, custom_text, (10, 60), font, 0.7, (0, 255, 0), 2, cv2.LINE_AA)
             
             _, buffer = cv2.imencode('.jpg', annotated_frame)
             frame_bytes = buffer.tobytes()

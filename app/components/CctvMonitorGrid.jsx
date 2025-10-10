@@ -6,7 +6,13 @@ import { FiEdit2, FiTrash2, FiEye, FiEyeOff, FiPlus } from 'react-icons/fi'
 import { MdOutlineControlCamera } from 'react-icons/md'
 
 export default function CctvMonitorGrid({ cctvs: initialCctvs }) {
-  const [cctvs, setCctvs] = useState(initialCctvs)
+  // Sort CCTVs so active ones (status: true) are always on top
+  const sortedCctvs = [...initialCctvs].sort((a, b) => {
+    if (a.status === b.status) return 0
+    return a.status ? -1 : 1
+  })
+  
+  const [cctvs, setCctvs] = useState(sortedCctvs)
   const [selectedCctv, setSelectedCctv] = useState(null)
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingCctv, setEditingCctv] = useState(null)
@@ -106,10 +112,22 @@ export default function CctvMonitorGrid({ cctvs: initialCctvs }) {
         const data = await response.json()
         
         if (editingCctv) {
-          setCctvs(cctvs.map(c => c._id === editingCctv._id ? data : c))
+          const updatedCctvs = cctvs.map(c => c._id === editingCctv._id ? data : c)
+          // Re-sort after update
+          const sortedCctvs = [...updatedCctvs].sort((a, b) => {
+            if (a.status === b.status) return 0
+            return a.status ? -1 : 1
+          })
+          setCctvs(sortedCctvs)
           alert('CCTV updated successfully')
         } else {
-          setCctvs([...cctvs, data])
+          const updatedCctvs = [...cctvs, data]
+          // Re-sort after adding
+          const sortedCctvs = [...updatedCctvs].sort((a, b) => {
+            if (a.status === b.status) return 0
+            return a.status ? -1 : 1
+          })
+          setCctvs(sortedCctvs)
           alert('CCTV added successfully')
         }
 
@@ -141,7 +159,13 @@ export default function CctvMonitorGrid({ cctvs: initialCctvs }) {
 
       if (response.ok) {
         const data = await response.json()
-        setCctvs(cctvs.map(c => c._id === cctv._id ? data : c))
+        const updatedCctvs = cctvs.map(c => c._id === cctv._id ? data : c)
+        // Re-sort after status toggle
+        const sortedCctvs = [...updatedCctvs].sort((a, b) => {
+          if (a.status === b.status) return 0
+          return a.status ? -1 : 1
+        })
+        setCctvs(sortedCctvs)
       }
     } catch (error) {
       console.error('Error toggling status:', error)
