@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server'
 import { io } from 'socket.io-client'
 import Cctv from '@/models/CctvModel'
 import whatsappService from '@/services/whatsappService'
+import telegramService from '@/services/telegramService'
 
 //  @route  GET api/accidents
 //  @desc   Get all accidents
@@ -61,6 +62,15 @@ export async function POST(request) {
       })
       .catch(err => {
         console.error('❌ Error sending WhatsApp notifications:', err)
+      })
+
+    // Send Telegram notifications asynchronously (don't wait for completion)
+    telegramService.sendAccidentNotification(createdAccident, ccCamera)
+      .then(results => {
+        console.log(`📱 Telegram notifications sent: ${results.filter(r => r.success).length}/${results.length}`)
+      })
+      .catch(err => {
+        console.error('❌ Error sending Telegram notifications:', err)
       })
 
     return NextResponse.json(createdAccident, { status: 201 })

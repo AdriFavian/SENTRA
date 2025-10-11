@@ -51,11 +51,69 @@ async function setupDatabase() {
         accident_classification VARCHAR(50) DEFAULT '' CHECK (accident_classification IN ('Fatal', 'Serious', 'Normal', '')),
         photos TEXT NOT NULL,
         cctv_id INTEGER REFERENCES cctvs(id),
+        is_handled BOOLEAN DEFAULT false,
+        handled_by VARCHAR(255),
+        handled_at TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `)
     console.log('✅ Created accidents table')
+
+    // Create telegram_contacts table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS telegram_contacts (
+        id SERIAL PRIMARY KEY,
+        cctv_id INTEGER REFERENCES cctvs(id) ON DELETE CASCADE,
+        chat_id VARCHAR(255) NOT NULL,
+        phone_number VARCHAR(20),
+        name VARCHAR(255),
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(cctv_id, chat_id)
+      )
+    `)
+    console.log('✅ Created telegram_contacts table')
+
+    // Create telegram_notifications table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS telegram_notifications (
+        id SERIAL PRIMARY KEY,
+        accident_id INTEGER REFERENCES accidents(id) ON DELETE CASCADE,
+        chat_id VARCHAR(255) NOT NULL,
+        status VARCHAR(20) DEFAULT 'sent' CHECK (status IN ('sent', 'failed', 'delivered')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+    console.log('✅ Created telegram_notifications table')
+
+    // Create whatsapp_contacts table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS whatsapp_contacts (
+        id SERIAL PRIMARY KEY,
+        cctv_id INTEGER REFERENCES cctvs(id) ON DELETE CASCADE,
+        phone_number VARCHAR(20) NOT NULL,
+        name VARCHAR(255),
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(cctv_id, phone_number)
+      )
+    `)
+    console.log('✅ Created whatsapp_contacts table')
+
+    // Create whatsapp_notifications table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS whatsapp_notifications (
+        id SERIAL PRIMARY KEY,
+        accident_id INTEGER REFERENCES accidents(id) ON DELETE CASCADE,
+        phone_number VARCHAR(20) NOT NULL,
+        status VARCHAR(20) DEFAULT 'sent' CHECK (status IN ('sent', 'failed', 'delivered')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+    console.log('✅ Created whatsapp_notifications table')
 
     // Create function to update updated_at timestamp
     await client.query(`
@@ -85,6 +143,22 @@ async function setupDatabase() {
         FOR EACH ROW
         EXECUTE FUNCTION update_updated_at_column();
     `)
+
+    await client.query(`
+      DROP TRIGGER IF EXISTS update_telegram_contacts_updated_at ON telegram_contacts;
+      CREATE TRIGGER update_telegram_contacts_updated_at
+        BEFORE UPDATE ON telegram_contacts
+        FOR EACH ROW
+        EXECUTE FUNCTION update_updated_at_column();
+    `)
+
+    await client.query(`
+      DROP TRIGGER IF EXISTS update_whatsapp_contacts_updated_at ON whatsapp_contacts;
+      CREATE TRIGGER update_whatsapp_contacts_updated_at
+        BEFORE UPDATE ON whatsapp_contacts
+        FOR EACH ROW
+        EXECUTE FUNCTION update_updated_at_column();
+    `)
     console.log('✅ Created update triggers')
 
     // Insert some sample data if tables are empty
@@ -97,7 +171,7 @@ async function setupDatabase() {
         ('http://127.0.0.1:5000/2', -7.9797, 112.6304, true, 'Kota Malang'),
         ('http://127.0.0.1:5000/test', -7.9553, 112.6092, true, 'Kabupaten Malang'),
         ('http://stream.cctv.malangkota.go.id/WebRTCApp/streams/982131430615781858979987.m3u8?token=null', -7.9666, 112.6326, true, 'Kota Malang'),
-        ('https://cctvjss.jogjakota.go.id/atcs/ATCS_Simpang_Demangan_View_Timur.stream/chunklist_w1871020004.m3u8', -7.9666, 112.6326, true, 'Yogyakarta'),
+        ('https://cctvjss.jogjakota.go.id/atcs/ATCS_Lampu_Merah_SugengJeroni2.stream/chunklist_w1974210259.m3u8', -7.9666, 112.6326, true, 'Yogyakarta'),
         ('https://streamcctv.padang.go.id:3000/stream/EkxXZHHp-cnNe-iHdQ-nTuJ-9gLkDScWQlis/channel/0/hlsll/live/index.m3u8?_HLS_msn=54&_HLS_part=10', -0.929511, 100.350342, true, 'Pantai Padang')
       `)
       console.log('✅ Sample CCTV data inserted')
@@ -126,11 +200,20 @@ async function setupDatabase() {
       console.log('📝 Inserting sample WhatsApp contact data...')
       await client.query(`
         INSERT INTO whatsapp_contacts (cctv_id, phone_number, name) VALUES
-    
-        (2, '087858520937', 'Ambulance Nokurento')
-      
+        (1, '6287858520937', 'Ambulance Nokurento')
       `)
       console.log('✅ Sample WhatsApp contact data inserted')
+    }
+
+    // Insert sample telegram data if tables are empty
+    const telegramContactCount = await client.query('SELECT COUNT(*) FROM telegram_contacts')
+    if (parseInt(telegramContactCount.rows[0].count) === 0) {
+      console.log('📝 Inserting sample Telegram contact data...')
+      await client.query(`
+        INSERT INTO telegram_contacts (cctv_id, chat_id, phone_number, name) VALUES
+        (1, '6287866301810', '087866301810', 'Emergency Contact')
+      `)
+      console.log('✅ Sample Telegram contact data inserted')
     }
 
     client.release()
