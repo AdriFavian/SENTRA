@@ -117,7 +117,7 @@ def generate_frames(video_path, custom_text, camera_id=None, show_boxes=True):
 
                     # Check if accident class detected with confidence threshold
                     if 'crash' in class_name.lower() or 'benturan' in class_name.lower():
-                        # Only detect crash/benturan if confidence > 81%
+                        # Only detect crash/benturan if confidence > 90%
                         if confidence > 0.90:
                             accident_detected = True
                             if confidence > max_confidence:
@@ -249,9 +249,9 @@ def generate_frames_from_mjpeg(stream_url, custom_text, camera_id=None, show_box
                     confidence = float(r.boxes.conf[idx]) if len(r.boxes.conf) > idx else 0.0
                     
                     # Check if accident class detected with confidence threshold
-                    if 'crash' in class_name.lower() or 'benturan' in class_name.lower():
-                        # Score detection if stream is MJPEG, only detect crash/benturan if confidence > 85%
-                        if confidence > 0.85:
+                    if 'benturan' in class_name.lower():
+                        # Score detection if stream is MJPEG, only detect crash/benturan if confidence > 90%
+                        if confidence > 0.80:
                             accident_detected = True
                             if confidence > max_confidence:
                                 max_confidence = confidence
