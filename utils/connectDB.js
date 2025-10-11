@@ -45,6 +45,20 @@ async function createTables() {
       )
     `)
     
+    // Create whatsapp_contacts table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS whatsapp_contacts (
+        id SERIAL PRIMARY KEY,
+        cctv_id INTEGER REFERENCES cctvs(id) ON DELETE CASCADE,
+        phone_number VARCHAR(20) NOT NULL,
+        name VARCHAR(255),
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(cctv_id, phone_number)
+      )
+    `)
+    
     // Create accidents table
     await client.query(`
       CREATE TABLE IF NOT EXISTS accidents (
@@ -52,8 +66,34 @@ async function createTables() {
         accident_classification VARCHAR(50) DEFAULT '' CHECK (accident_classification IN ('Fatal', 'Serious', 'Normal', '')),
         photos TEXT NOT NULL,
         cctv_id INTEGER REFERENCES cctvs(id),
+        handled_by VARCHAR(20),
+        is_handled BOOLEAN DEFAULT false,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+    
+    // Create whatsapp_notifications table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS whatsapp_notifications (
+        id SERIAL PRIMARY KEY,
+        accident_id INTEGER REFERENCES accidents(id) ON DELETE CASCADE,
+        phone_number VARCHAR(20) NOT NULL,
+        status VARCHAR(20) DEFAULT 'sent',
+        sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+    
+    // Create whatsapp_notifications table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS whatsapp_notifications (
+        id SERIAL PRIMARY KEY,
+        accident_id INTEGER REFERENCES accidents(id) ON DELETE CASCADE,
+        phone_number VARCHAR(20) NOT NULL,
+        status VARCHAR(20) DEFAULT 'sent',
+        sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `)
     
@@ -73,6 +113,14 @@ async function createTables() {
       DROP TRIGGER IF EXISTS update_cctvs_updated_at ON cctvs;
       CREATE TRIGGER update_cctvs_updated_at
         BEFORE UPDATE ON cctvs
+        FOR EACH ROW
+        EXECUTE FUNCTION update_updated_at_column();
+    `)
+    
+    await client.query(`
+      DROP TRIGGER IF EXISTS update_whatsapp_contacts_updated_at ON whatsapp_contacts;
+      CREATE TRIGGER update_whatsapp_contacts_updated_at
+        BEFORE UPDATE ON whatsapp_contacts
         FOR EACH ROW
         EXECUTE FUNCTION update_updated_at_column();
     `)

@@ -3,6 +3,8 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
+import { FaWhatsapp, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import WhatsAppContactsManager from "./WhatsAppContactsManager";
 
 const CctvLists = ({ cctvLists }) => {
    const router = useRouter();
@@ -11,6 +13,7 @@ const CctvLists = ({ cctvLists }) => {
    const [cctvid, setCCTVId] = useState("");
    const [cctvIp, setCCTVIp] = useState("");
    const [newValue, setNewValue] = useState("");
+   const [expandedCctv, setExpandedCctv] = useState(null);
 
    const handlePopup = async (id, ipAddress) => {
       setShow(true);
@@ -102,30 +105,57 @@ hover:shadow-lg hover:bg-gray-100"
          )}
          <h1 className="mb-3 text-2xl font-semibold">Areas covered by CCTVs</h1>
          <div className="flex gap-3 flex-col">
-            {cctvLists.map(({ _id, city, ipAddress }) => (
+            {cctvLists.map(({ _id, city, ipAddress, whatsappContacts = [] }) => (
                <div
                   key={_id}
-                  className="border px-5 py-4 rounded-full shadow-sm flex justify-between items-center"
+                  className="border rounded-lg shadow-sm overflow-hidden"
                >
-                  <h2 className="text-black/80 tracking-wide">
-                     {city} (
-                     <a
-                        href={ipAddress}
-                        target="_blank"
-                        className="text-blue-400"
-                     >
-                        {ipAddress}
-                     </a>
-                     )
-                  </h2>
-                  <div className="flex gap-2">
-                     <button onClick={() => handlePopup(_id, ipAddress)}>
-                        <AiOutlineEdit className="h-5 w-5 cursor-pointer hover:text-blue-500" />
-                     </button>
-                     <button onClick={() => handleDelete(_id)}>
-                        <AiOutlineDelete className="h-5 w-5 cursor-pointer hover:text-red-500" />
-                     </button>
+                  <div className="px-5 py-4 flex justify-between items-center bg-white hover:bg-gray-50 transition-colors">
+                     <div className="flex-1">
+                        <h2 className="text-black/80 tracking-wide">
+                           {city} (
+                           <a
+                              href={ipAddress}
+                              target="_blank"
+                              className="text-blue-400"
+                           >
+                              {ipAddress}
+                           </a>
+                           )
+                        </h2>
+                        <div className="flex items-center gap-2 mt-1">
+                           <FaWhatsapp className="text-green-500 text-sm" />
+                           <span className="text-xs text-gray-600">
+                              {whatsappContacts.length} kontak
+                           </span>
+                        </div>
+                     </div>
+                     <div className="flex gap-2 items-center">
+                        <button 
+                           onClick={() => setExpandedCctv(expandedCctv === _id ? null : _id)}
+                           className="px-3 py-2 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-2"
+                        >
+                           <FaWhatsapp />
+                           {expandedCctv === _id ? <FaChevronUp /> : <FaChevronDown />}
+                        </button>
+                        <button onClick={() => handlePopup(_id, ipAddress)}>
+                           <AiOutlineEdit className="h-5 w-5 cursor-pointer hover:text-blue-500" />
+                        </button>
+                        <button onClick={() => handleDelete(_id)}>
+                           <AiOutlineDelete className="h-5 w-5 cursor-pointer hover:text-red-500" />
+                        </button>
+                     </div>
                   </div>
+                  
+                  {/* WhatsApp Contacts Expanded Section */}
+                  {expandedCctv === _id && (
+                     <div className="px-5 pb-4 bg-gray-50">
+                        <WhatsAppContactsManager 
+                           cctvId={_id} 
+                           initialContacts={whatsappContacts}
+                        />
+                     </div>
+                  )}
                </div>
             ))}
          </div>

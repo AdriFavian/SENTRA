@@ -250,6 +250,7 @@ def generate_frames_from_mjpeg(stream_url, custom_text, camera_id=None, show_box
                     
                     # Check if accident class detected with confidence threshold
                     if 'crash' in class_name.lower() or 'benturan' in class_name.lower():
+                        # Score detection if stream is MJPEG, only detect crash/benturan if confidence > 85%
                         if confidence > 0.85:
                             accident_detected = True
                             if confidence > max_confidence:

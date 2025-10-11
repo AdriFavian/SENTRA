@@ -10,6 +10,8 @@ SENTRA is a cutting-edge system designed to enhance highway safety by integratin
 
 - **Real-time Alerts**: Once an accident is detected, SENTRA immediately sends real-time alerts to the concerned authorities. These alerts include precise accident location data, allowing first responders to reach the scene quickly.
 
+- **WhatsApp Notifications**: Integrated WhatsApp notification system sends urgent alerts with accident snapshots, GPS location links, and interactive response buttons to configured emergency contacts. See [WHATSAPP_NOTIFICATION.md](WHATSAPP_NOTIFICATION.md) for details.
+
 - **Traffic Management**: SENTRA can provide real-time traffic data based on accident information. This can help authorities reroute traffic and minimize congestion caused by accidents, improving overall traffic flow.
 
 - **Historical Data Analysis**: The system collects and stores historical accident data, which can be analyzed to identify accident-prone areas and patterns. This information can be used for future highway planning and safety improvements.
