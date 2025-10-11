@@ -120,6 +120,18 @@ async function setupDatabase() {
       `)
       console.log('✅ Sample accident data inserted')
     }
+    // Insert sample whatsapp data if tables are empty
+    const whatsappContactCount = await client.query('SELECT COUNT(*) FROM whatsapp_contacts')
+    if (parseInt(whatsappContactCount.rows[0].count) === 0) {
+      console.log('📝 Inserting sample WhatsApp contact data...')
+      await client.query(`
+        INSERT INTO whatsapp_contacts (cctv_id, phone_number, name) VALUES
+    
+        (2, '087858520937', 'Ambulance Nokurento')
+      
+      `)
+      console.log('✅ Sample WhatsApp contact data inserted')
+    }
 
     client.release()
     console.log('🎉 Database setup completed successfully!')

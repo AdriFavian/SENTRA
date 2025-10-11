@@ -3,6 +3,7 @@ import Accidents from '@/models/AccidentModel'
 import { NextResponse } from 'next/server'
 import { io } from 'socket.io-client'
 import Cctv from '@/models/CctvModel'
+import whatsappService from '@/services/whatsappService'
 
 //  @route  GET api/accidents
 //  @desc   Get all accidents
@@ -52,6 +53,15 @@ export async function POST(request) {
     socket.emit('send-message', createdAccident)
 
     console.log(`✅ Accident created with severity: ${finalSeverity}`)
+    
+    // Send WhatsApp notifications asynchronously (don't wait for completion)
+    whatsappService.sendAccidentNotification(createdAccident, ccCamera)
+      .then(results => {
+        console.log(`📱 WhatsApp notifications sent: ${results.filter(r => r.success).length}/${results.length}`)
+      })
+      .catch(err => {
+        console.error('❌ Error sending WhatsApp notifications:', err)
+      })
 
     return NextResponse.json(createdAccident, { status: 201 })
   } catch (e) {

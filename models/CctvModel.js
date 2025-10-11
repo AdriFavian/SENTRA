@@ -9,18 +9,34 @@ class CctvModel {
       const result = await client.query(
         'SELECT * FROM cctvs ORDER BY created_at DESC'
       )
-      return result.rows.map(row => ({
-        _id: row.id,
-        ipAddress: row.ip_address,
-        location: {
-          latitude: parseFloat(row.latitude),
-          longitude: parseFloat(row.longitude)
-        },
-        status: row.status,
-        city: row.city,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at
+      
+      // Get WhatsApp contacts for each CCTV
+      const cctvs = await Promise.all(result.rows.map(async (row) => {
+        const contactsResult = await client.query(
+          'SELECT * FROM whatsapp_contacts WHERE cctv_id = $1 AND is_active = true',
+          [row.id]
+        )
+        
+        return {
+          _id: row.id,
+          ipAddress: row.ip_address,
+          location: {
+            latitude: parseFloat(row.latitude),
+            longitude: parseFloat(row.longitude)
+          },
+          status: row.status,
+          city: row.city,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+          whatsappContacts: contactsResult.rows.map(c => ({
+            id: c.id,
+            phoneNumber: c.phone_number,
+            name: c.name
+          }))
+        }
       }))
+      
+      return cctvs
     } finally {
       client.release()
     }
@@ -35,6 +51,13 @@ class CctvModel {
       if (result.rows.length === 0) return null
       
       const row = result.rows[0]
+      
+      // Get WhatsApp contacts
+      const contactsResult = await client.query(
+        'SELECT * FROM whatsapp_contacts WHERE cctv_id = $1 AND is_active = true',
+        [id]
+      )
+      
       return {
         _id: row.id,
         ipAddress: row.ip_address,
@@ -45,7 +68,12 @@ class CctvModel {
         status: row.status,
         city: row.city,
         createdAt: row.created_at,
-        updatedAt: row.updated_at
+        updatedAt: row.updated_at,
+        whatsappContacts: contactsResult.rows.map(c => ({
+          id: c.id,
+          phoneNumber: c.phone_number,
+          name: c.name
+        }))
       }
     } finally {
       client.release()
