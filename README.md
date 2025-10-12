@@ -1,12 +1,67 @@
-# SENTRA
+# 🚨 SENTRA - Smart Sensor-based Traffic Accident Alert
 
-## Introduction
+## 📖 Introduction
 
-SENTRA is a cutting-edge system designed to enhance highway safety by integrating with existing CCTV cameras and utilizing machine learning to detect accidents. This system is dedicated to ensuring swift and efficient response to accidents, reducing the severity of incidents, and ultimately saving lives.
+SENTRA is a cutting-edge system designed to enhance highway safety by integrating with existing CCTV cameras and utilizing machine learning (YOLOv8) to detect accidents in real-time. This system is dedicated to ensuring swift and efficient response to accidents, reducing the severity of incidents, and ultimately saving lives.
 
-## Features
+## ✨ Features
 
-- **Accident Detection**: SENTRA employs advanced machine learning algorithms to analyze live camera feeds from existing CCTV cameras placed on highways. It can swiftly and accurately detect accidents, regardless of the time of day or weather conditions.
+- **🤖 AI-Powered Detection**: YOLOv8 model analyzes live CCTV feeds to detect accidents with high accuracy
+- **⚡ Real-time Alerts**: Instant notifications via WebSocket when accidents are detected
+- **📱 Multi-channel Notifications**: Telegram and WhatsApp notifications with accident photos
+- **📊 Interactive Dashboard**: Live monitoring, statistics, and accident history
+- **🗺️ Google Maps Integration**: Visual accident locations and CCTV placements
+- **🎯 Severity Classification**: Automatic classification of accident severity
+- **📸 Snapshot Capture**: Automatic photo capture when accidents occur
+- **🔔 Customizable Alerts**: Configure notification contacts per CCTV
+
+## 🏗️ Architecture
+
+**Hybrid Deployment:**
+- **Frontend**: Next.js hosted on Vercel (Cloud)
+- **Backend**: Flask AI + Socket.IO running on your laptop
+- **Database**: PostgreSQL (Vercel Postgres)
+- **Tunneling**: ngrok for exposing local backend
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed architecture diagram.
+
+## 🚀 Quick Start
+
+### For Deployment (Production)
+
+See detailed guides:
+- **📘 [QUICK_DEPLOY.md](./QUICK_DEPLOY.md)** - Quick deployment guide
+- **📗 [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)** - Comprehensive deployment guide
+- **✅ [DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md)** - Step-by-step checklist
+
+**TL;DR:**
+```bash
+# 1. Deploy frontend to Vercel
+vercel --prod
+
+# 2. Start backend on laptop
+start-production.bat
+
+# 3. Update Vercel with ngrok URLs
+npm run update-vercel-env
+```
+
+### For Development (Local)
+
+```bash
+# 1. Install dependencies
+npm install
+pip install -r requirements.txt
+
+# 2. Setup environment
+cp .env.example .env.local
+# Edit .env.local with your credentials
+
+# 3. Start development servers
+npm run dev        # Next.js (port 3000)
+npm run socket     # Socket.IO (port 4001)
+python app.py      # Flask AI (port 5000)
+```
 
 - **Real-time Alerts**: Once an accident is detected, SENTRA immediately sends real-time alerts to the concerned authorities. These alerts include precise accident location data, allowing first responders to reach the scene quickly.
 

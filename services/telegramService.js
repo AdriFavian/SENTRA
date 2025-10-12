@@ -319,7 +319,7 @@ class TelegramService {
     
     // Create Indonesian urgent message
     const message = `🚨 *PERINGATAN KECELAKAAN LALU LINTAS* 🚨
-
+*Id Laporan:* ${accident.id || accident._id}
 *Lokasi:* ${cctv.city}
 *Klasifikasi:* ${accident.accident_classification || accident.accidentClassification}
 *Waktu:* ${new Date(accident.created_at || accident.createdAt).toLocaleString('id-ID')}
@@ -385,6 +385,9 @@ Mohon segera konfirmasi apakah Anda akan menangani kecelakaan ini.`
     const client = await pool.connect()
     
     try {
+      console.log(`📢 Sending handled notification for accident ${accident.id || accident._id}`)
+      console.log(`👤 Handled by chat ID: ${handledByChatId}`)
+      
       // Get all recipients except the one who handled it
       const result = await client.query(
         `SELECT DISTINCT tn.chat_id 
@@ -397,13 +400,18 @@ Mohon segera konfirmasi apakah Anda akan menangani kecelakaan ini.`
       
       const recipients = result.rows.map(r => r.chat_id)
       
+      console.log(`📋 Found ${recipients.length} recipients to notify:`, recipients)
+      
       if (recipients.length === 0) {
+        console.log('⚠️ No recipients found to send handled notification')
         return []
       }
-      
+      //  bukan ini
       const message = `✅ *KECELAKAAN SUDAH DITANGANI*
+*ID Laporan:* ${accident.id || accident._id}
 
 Kecelakaan yang terjadi pada:
+*Lokasi:* ${accident.cctv?.city || 'Unknown'}
 *Waktu:* ${new Date(accident.created_at || accident.createdAt).toLocaleString('id-ID')}
 
 Sudah ditangani oleh petugas lain.
@@ -412,10 +420,20 @@ Terima kasih atas perhatian Anda.`
       
       // Send to all other recipients
       const results = await Promise.all(
-        recipients.map(chatId => this.sendMessage(chatId, message))
+        recipients.map(async chatId => {
+          console.log(`📤 Sending handled notification to ${chatId}`)
+          const result = await this.sendMessage(chatId, message)
+          console.log(`${result.success ? '✅' : '❌'} Handled notification to ${chatId}: ${result.success ? 'sent' : result.error}`)
+          return result
+        })
       )
       
+      console.log(`✅ Handled notifications sent to ${results.filter(r => r.success).length}/${recipients.length} recipients`)
+      
       return results
+    } catch (error) {
+      console.error('❌ Error sending handled notification:', error)
+      throw error
     } finally {
       client.release()
     }

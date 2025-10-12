@@ -2,7 +2,6 @@ import { getAllCctv } from '@/helpers/cctvHelper'
 import { getAllAccidents } from '@/helpers/accidentHelper'
 import AccidentStatistics from './components/AccidentStatistics'
 import RealtimeAlerts from './components/RealtimeAlerts'
-import CctvLists from './components/CctvLists'
 
 async function getStats() {
   try {
@@ -149,29 +148,12 @@ export default async function Home() {
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
           
-          {/* Left Column - Analytics & CCTV Management */}
+          {/* Left Column - Analytics */}
           <div className="xl:col-span-2 space-y-8">
             
             {/* Analytics Dashboard */}
             <section className="animate-fade-in" style={{ animationDelay: '100ms' }}>
               <AccidentStatistics initialStats={stats} weeklyData={weeklyData} />
-            </section>
-
-            {/* CCTV Management */}
-            <section className="card p-6 animate-fade-in" style={{ animationDelay: '200ms' }}>
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-neutral-900">Camera Network</h2>
-                  <p className="text-sm text-neutral-500 mt-1">Manage and monitor CCTV devices</p>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-50 rounded-lg border border-primary-200">
-                  <div className="w-2 h-2 bg-primary-500 rounded-full"></div>
-                  <span className="text-sm font-semibold text-primary-700">
-                    {cctvLists?.filter(c => c.status).length || 0} / {cctvLists?.length || 0} Online
-                  </span>
-                </div>
-              </div>
-              <CctvLists cctvLists={cctvLists} />
             </section>
           </div>
 

@@ -7,6 +7,7 @@
 
 snapshots
 snapshots/
+public/snapshots/
 
 # testing
 /coverage
@@ -36,3 +37,20 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# YOLO Models
+*.pt
+!test5.pt
+
+# ngrok
+ngrok.yml

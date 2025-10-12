@@ -2,63 +2,65 @@
 import React from 'react'
 import dayjs from 'dayjs'
 import Link from 'next/link'
-import { isNull } from 'lodash'
 import Image from 'next/image'
-var relativeTime = require('dayjs/plugin/relativeTime')
+import { FiEye } from 'react-icons/fi'
 
 const AccidentList = ({ accident, index }) => {
+  const getSeverityStyles = (classification) => {
+    switch(classification) {
+      case 'Fatal':
+        return 'badge-danger'
+      case 'Serious':
+        return 'badge-warning'
+      case 'Normal':
+      default:
+        return 'badge-primary'
+    }
+  }
+
   return (
-    <>
-      <tr key={accident._id} className='bg-white border-b hover:bg-gray-50'>
-        <th
-          scope='row'
-          className='px-6 py-4 font-medium text-gray-900 whitespace-nowrap'
-        >
-          {index + 1}
-        </th>
-        <td className='px-6 py-4'>
+    <tr className='bg-white border-b border-neutral-200 hover:bg-neutral-50 transition-colors'>
+      <td className='px-6 py-4 font-medium text-neutral-900 text-center'>
+        {index + 1}
+      </td>
+      <td className='px-6 py-4'>
+        <div className='relative w-24 h-24 rounded-xl overflow-hidden shadow-sm border-2 border-neutral-200'>
           <Image
             src={`/../${accident.photos}`}
-            alt={accident.photos}
-            width={200}
-            height={200}
-            className='w-40 h-40 object-cover'
+            alt={`Accident ${index + 1}`}
+            fill
+            className='object-cover hover:scale-110 transition-transform duration-300'
+            sizes='96px'
           />
-        </td>
-
-        <td className='px-6 py-4'>
-          {dayjs(accident.createdAt).format('DD, MMMM YYYY')}
-        </td>
-        <td className='px-6 py-4'>
-          {dayjs(accident.createdAt).format('hh:mm:ss A')}
-        </td>
-
-        <td className='px-6 py-4'>{accident.cctv?.city}</td>
-        <td className='px-6 py-4'>
-          <span
-            className={`${
-              accident.accidentClassification === 'Fatal'
-                ? 'bg-red-500 text-white'
-                : accident.accidentClassification === 'Serious'
-                ? 'bg-yellow-500 text-white'
-                : (accident.accidentClassification === 'Normal' || !accident.accidentClassification)
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-500 text-white'
-            }  px-5 py-2 rounded-full`}
-          >
-            {accident.accidentClassification || 'Normal'}
-          </span>
-        </td>
-        <td className='px-6 py-4'>
-          <Link
-            href={`accidents/${accident._id}`}
-            className='font-medium text-blue-600 dark:text-blue-500 hover:underline'
-          >
-            Details
-          </Link>
-        </td>
-      </tr>
-    </>
+        </div>
+      </td>
+      <td className='px-6 py-4 text-neutral-700'>
+        {dayjs(accident.createdAt).format('DD MMM YYYY')}
+      </td>
+      <td className='px-6 py-4 text-neutral-700 font-medium'>
+        {dayjs(accident.createdAt).format('hh:mm:ss A')}
+      </td>
+      <td className='px-6 py-4'>
+        <div className='flex items-center gap-2'>
+          <span className='text-primary-600'>📍</span>
+          <span className='text-neutral-900 font-medium'>{accident.cctv?.city || 'Unknown'}</span>
+        </div>
+      </td>
+      <td className='px-6 py-4'>
+        <span className={`${getSeverityStyles(accident.accidentClassification)} inline-flex items-center`}>
+          {accident.accidentClassification || 'Normal'}
+        </span>
+      </td>
+      <td className='px-6 py-4'>
+        <Link
+          href={`accidents/${accident._id}`}
+          className='inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-lg hover:from-primary-600 hover:to-primary-700 transition-all hover:shadow-md font-medium'
+        >
+          <FiEye className='w-4 h-4' />
+          View
+        </Link>
+      </td>
+    </tr>
   )
 }
 

@@ -139,7 +139,7 @@ export default function TelegramContactsManager({ cctvId }) {
                 required
               />
               <p className="text-xs text-gray-500 mt-1">
-                Gunakan @userinfobot untuk mendapatkan Chat ID
+                Gunakan @Sentra_message_bot untuk mendapatkan Chat ID
               </p>
             </div>
             <div>
@@ -241,7 +241,7 @@ export default function TelegramContactsManager({ cctvId }) {
       <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
         <h4 className="font-medium text-blue-900 mb-2">ℹ️ Cara Mendapatkan Chat ID:</h4>
         <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
-          <li>Buka Telegram dan cari bot <code className="bg-blue-100 px-1 rounded">@userinfobot</code></li>
+          <li>Buka Telegram dan cari bot <code className="bg-blue-100 px-1 rounded">@Sentra_message_bot</code></li>
           <li>Kirim pesan <code className="bg-blue-100 px-1 rounded">/start</code> ke bot</li>
           <li>Bot akan mengirimkan Chat ID Anda</li>
           <li>Salin Chat ID dan masukkan di form di atas</li>

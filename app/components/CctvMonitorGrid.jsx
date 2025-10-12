@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import LiveVideoPlayer from './LiveVideoPlayer'
-import { FiEdit2, FiTrash2, FiEye, FiEyeOff, FiPlus } from 'react-icons/fi'
+import { FiEdit2, FiTrash2, FiEye, FiEyeOff, FiPlus, FiMaximize2 } from 'react-icons/fi'
 import { MdOutlineControlCamera } from 'react-icons/md'
 
 export default function CctvMonitorGrid({ cctvs: initialCctvs }) {
@@ -25,6 +25,7 @@ export default function CctvMonitorGrid({ cctvs: initialCctvs }) {
     longitude: '',
     status: true
   })
+  const [fullscreenCctv, setFullscreenCctv] = useState(null)
 
   // Helper function to determine if stream needs proxy for detection
   const getStreamUrl = (ipAddress, cameraId, cameraName) => {
@@ -171,6 +172,34 @@ export default function CctvMonitorGrid({ cctvs: initialCctvs }) {
       console.error('Error toggling status:', error)
     }
   }
+
+  const handleFullscreen = (cctv) => {
+    setFullscreenCctv(cctv)
+  }
+
+  const closeFullscreen = () => {
+    setFullscreenCctv(null)
+  }
+
+  // Handle ESC key to close fullscreen
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && fullscreenCctv) {
+        closeFullscreen()
+      }
+    }
+
+    if (fullscreenCctv) {
+      document.addEventListener('keydown', handleEscape)
+      // Prevent body scroll when fullscreen is open
+      document.body.style.overflow = 'hidden'
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+      document.body.style.overflow = 'unset'
+    }
+  }, [fullscreenCctv])
 
   return (
     <div className="space-y-6">
@@ -404,8 +433,17 @@ export default function CctvMonitorGrid({ cctvs: initialCctvs }) {
                 </button>
 
                 <button
+                  onClick={() => handleFullscreen(cctv)}
+                  className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition"
+                  title="Fullscreen"
+                >
+                  <FiMaximize2 className="w-4 h-4" />
+                </button>
+
+                <button
                   onClick={() => handleEdit(cctv)}
                   className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition"
+                  title="Edit"
                 >
                   <FiEdit2 className="w-4 h-4" />
                 </button>
@@ -413,6 +451,7 @@ export default function CctvMonitorGrid({ cctvs: initialCctvs }) {
                 <button
                   onClick={() => handleDelete(cctv._id)}
                   className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition"
+                  title="Delete"
                 >
                   <FiTrash2 className="w-4 h-4" />
                 </button>
@@ -433,6 +472,62 @@ export default function CctvMonitorGrid({ cctvs: initialCctvs }) {
           >
             Add CCTV Camera
           </button>
+        </div>
+      )}
+      
+      {/* Fullscreen Modal */}
+      {fullscreenCctv && (
+        <div className="fixed inset-0 bg-black z-50 flex flex-col">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-neutral-900 to-neutral-800 p-4 flex items-center justify-between border-b border-neutral-700">
+            <div className="flex items-center gap-3">
+              <MdOutlineControlCamera className="w-6 h-6 text-white" />
+              <div>
+                <h2 className="text-white font-bold text-lg">{fullscreenCctv.city}</h2>
+                <p className="text-neutral-400 text-sm">{fullscreenCctv.ipAddress}</p>
+              </div>
+            </div>
+            <button
+              onClick={closeFullscreen}
+              className="text-white hover:text-red-400 transition-colors px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-medium"
+            >
+              ✕ Close
+            </button>
+          </div>
+          
+          {/* Video Content */}
+          <div className="flex-1 flex items-center justify-center p-8">
+            <div className="w-full h-full max-w-7xl">
+              <LiveVideoPlayer
+                streamUrl={getStreamUrl(fullscreenCctv.ipAddress, fullscreenCctv._id, fullscreenCctv.city)}
+                cameraName={fullscreenCctv.city}
+                cameraId={fullscreenCctv._id}
+                showDetectionBoxes={true}
+              />
+            </div>
+          </div>
+          
+          {/* Info Footer */}
+          <div className="bg-gradient-to-r from-neutral-900 to-neutral-800 p-4 border-t border-neutral-700">
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-6 text-neutral-300">
+                <div>
+                  <span className="text-neutral-500">GPS:</span> {fullscreenCctv.location.latitude.toFixed(6)}, {fullscreenCctv.location.longitude.toFixed(6)}
+                </div>
+                <div>
+                  <span className="text-neutral-500">Status:</span> 
+                  <span className={`ml-2 px-2 py-1 rounded-full text-xs ${
+                    fullscreenCctv.status ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+                  }`}>
+                    {fullscreenCctv.status ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+              </div>
+              <div className="text-neutral-500 text-xs">
+                Press ESC to exit fullscreen
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

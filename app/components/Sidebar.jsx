@@ -19,10 +19,10 @@ const Sidebar = () => {
     },
     {
       id: 1,
-      name: 'CCTV Cameras',
+      name: 'Camera Network',
       icon: <BiCctv className='w-5 h-5' />,
       path: '/cctvs',
-      description: 'Live Monitoring'
+      description: 'Manage CCTV Devices'
     },
     {
       id: 2,
@@ -51,7 +51,7 @@ const Sidebar = () => {
             <h1 className='text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent'>
               SENTRA
             </h1>
-            <p className='text-xs text-neutral-500 font-medium'>Traffic Safety AI</p>
+            <p className='text-xs text-neutral-500 font-medium'>Smart Sensor-based Traffic Accident Alert</p>
           </div>
         </Link>
       </div>

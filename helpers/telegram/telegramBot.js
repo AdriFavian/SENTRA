@@ -80,9 +80,10 @@ bot.on('callback_query', async (callbackQuery) => {
           // Notify all other recipients
           const message = `✅ *KECELAKAAN SUDAH DITANGANI*
 
+*kecelakan dengan ID: ${accident.id}*
+
 Kecelakaan yang terjadi pada:
 *Waktu:* ${new Date(accident.created_at).toLocaleString('id-ID')}
-
 Sudah ditangani oleh petugas lain.
 
 Terima kasih atas perhatian Anda.`
