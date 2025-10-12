@@ -4,11 +4,19 @@
  * Usage: node telegram-bot.js
  */
 
-import telegramService from './services/telegramService.js'
 import dotenv from 'dotenv'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
 
-// Load environment variables
-dotenv.config({ path: '.env.local' })
+// Get directory name for ES modules
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+// Load environment variables from .env.local
+dotenv.config({ path: join(__dirname, '.env.local') })
+
+// Now import telegramService after env is loaded
+const { default: telegramService } = await import('./services/telegramService.js')
 
 console.log('🤖 Starting Telegram Bot in polling mode...')
 

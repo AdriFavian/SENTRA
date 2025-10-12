@@ -1,4 +1,4 @@
-import connectDB from '@/utils/connectDB'
+import connectDB from '../utils/connectDB.js'
 
 class AccidentModel {
   static async findAll() {

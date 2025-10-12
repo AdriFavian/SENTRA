@@ -6,8 +6,17 @@
  * Use this script when running backend on laptop for Vercel frontend
  */
 
-require('dotenv').config({ path: '.env.local' })
-const { spawn } = require('child_process')
+import dotenv from 'dotenv'
+import { spawn } from 'child_process'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+
+// Get directory name for ES modules
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+// Load environment variables
+dotenv.config({ path: join(__dirname, '.env.local') })
 
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 console.log('🚀 SENTRA Production Backend Starter')

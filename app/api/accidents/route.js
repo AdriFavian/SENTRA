@@ -50,7 +50,11 @@ export async function POST(request) {
     })
 
     //initializing socket.io
-    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL)
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+      extraHeaders: {
+        'ngrok-skip-browser-warning': 'true'
+      }
+    })
     socket.emit('send-message', createdAccident)
 
     console.log(`✅ Accident created with severity: ${finalSeverity}`)

@@ -54,3 +54,5 @@ ENV/
 
 # ngrok
 ngrok.yml
+
+/src/generated/prisma
