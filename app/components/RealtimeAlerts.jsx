@@ -24,10 +24,14 @@ export default function RealtimeAlerts() {
   useEffect(() => {
     // Connect to Socket.IO server
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4001', {
-      transports: ['websocket', 'polling'],
-      query: {
+      transports: ['polling', 'websocket'],
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 10,
+      extraHeaders: {
         'ngrok-skip-browser-warning': 'true'
-      }
+      },
+      withCredentials: true
     })
 
     socketRef.current = socket

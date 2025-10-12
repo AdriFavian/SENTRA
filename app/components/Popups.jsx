@@ -10,9 +10,14 @@ import Image from 'next/image'
 
 function Popups() {
   const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4001', {
-    query: {
+    transports: ['polling', 'websocket'],
+    reconnection: true,
+    reconnectionDelay: 1000,
+    reconnectionAttempts: 10,
+    extraHeaders: {
       'ngrok-skip-browser-warning': 'true'
-    }
+    },
+    withCredentials: true
   })
   const router = useRouter()
 

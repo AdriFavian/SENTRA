@@ -51,9 +51,13 @@ export async function POST(request) {
 
     //initializing socket.io
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
-      query: {
+      transports: ['polling', 'websocket'],
+      reconnection: true,
+      reconnectionAttempts: 3,
+      extraHeaders: {
         'ngrok-skip-browser-warning': 'true'
-      }
+      },
+      withCredentials: true
     })
     socket.emit('send-message', createdAccident)
 

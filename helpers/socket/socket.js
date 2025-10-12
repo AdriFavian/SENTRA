@@ -1,27 +1,42 @@
 import { Server } from 'socket.io'
+import { createServer } from 'http'
 
 const allowedOrigins = [
   'https://sentra-navy.vercel.app',
-  'http://localhost:4001'
+  'http://localhost:4001',
+  'http://localhost:3000'
 ]
 
-const io = new Server(4001, {
+// Create HTTP server for better ngrok compatibility
+const httpServer = createServer()
+
+const io = new Server(httpServer, {
   cors: {
     origin: (origin, callback) => {
-      const isAllowedNgrok = origin?.endsWith('.ngrok-free.app')
-      const isAllowedVercelPreview = origin?.endsWith('.vercel.app') && origin.includes('sentra-navy')
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true)
+      
+      const isAllowedNgrok = origin.endsWith('.ngrok-free.app') || origin.includes('ngrok')
+      const isAllowedVercel = origin.endsWith('.vercel.app') && origin.includes('sentra')
+      const isAllowedOrigin = allowedOrigins.includes(origin)
 
-      if (!origin || allowedOrigins.includes(origin) || isAllowedNgrok || isAllowedVercelPreview) {
+      if (isAllowedOrigin || isAllowedNgrok || isAllowedVercel) {
         return callback(null, true)
       }
 
+      console.log(`⚠️  Origin blocked: ${origin}`)
       return callback(new Error(`Origin ${origin} not allowed by Socket.IO CORS config`))
     },
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['ngrok-skip-browser-warning', 'Content-Type'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['ngrok-skip-browser-warning', 'Content-Type', 'Authorization'],
     credentials: true,
-    optionsSuccessStatus: 204
-  }
+    optionsSuccessStatus: 200
+  },
+  // Important for ngrok compatibility
+  transports: ['polling', 'websocket'],
+  allowEIO3: true,
+  pingTimeout: 60000,
+  pingInterval: 25000
 })
 
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
@@ -29,9 +44,18 @@ console.log('🚀 SENTRA Socket.IO Server')
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 console.log('📡 Port: 4001')
 console.log('🌐 CORS: Allowed origins ->', [...allowedOrigins, '*.ngrok-free.app', 'sentra-navy*.vercel.app'].join(', '))
+console.log('🔧 Transports: polling, websocket (ngrok-compatible)')
 console.log('✅ Server Status: Ready')
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 console.log('')
+
+// Start HTTP server
+httpServer.listen(4001, () => {
+  console.log('🎧 HTTP Server listening on port 4001')
+  console.log('🔄 Ready for Socket.IO connections...')
+  console.log('Press Ctrl+C to stop')
+  console.log('')
+})
 
 let connectedClients = 0
 let totalMessages = 0
@@ -96,7 +120,3 @@ setInterval(() => {
     console.log(`💡 Status: ${connectedClients} clients connected, ${totalMessages} total messages processed`)
   }
 }, 60000) // Every minute
-
-console.log('🔄 Listening for connections...')
-console.log('Press Ctrl+C to stop')
-console.log('')
