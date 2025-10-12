@@ -51,7 +51,7 @@ export async function POST(request) {
 
     //initializing socket.io
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
-      extraHeaders: {
+      query: {
         'ngrok-skip-browser-warning': 'true'
       }
     })

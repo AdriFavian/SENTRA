@@ -1,17 +1,34 @@
 import { Server } from 'socket.io'
 
-const io = new Server(4001, { 
-  cors: { 
-    origin: '*',
-    methods: ["GET", "POST"]
-  } 
+const allowedOrigins = [
+  'https://sentra-navy.vercel.app',
+  'http://localhost:4001'
+]
+
+const io = new Server(4001, {
+  cors: {
+    origin: (origin, callback) => {
+      const isAllowedNgrok = origin?.endsWith('.ngrok-free.app')
+      const isAllowedVercelPreview = origin?.endsWith('.vercel.app') && origin.includes('sentra-navy')
+
+      if (!origin || allowedOrigins.includes(origin) || isAllowedNgrok || isAllowedVercelPreview) {
+        return callback(null, true)
+      }
+
+      return callback(new Error(`Origin ${origin} not allowed by Socket.IO CORS config`))
+    },
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['ngrok-skip-browser-warning', 'Content-Type'],
+    credentials: true,
+    optionsSuccessStatus: 204
+  }
 })
 
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 console.log('🚀 SENTRA Socket.IO Server')
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 console.log('📡 Port: 4001')
-console.log('🌐 CORS: Enabled for all origins')
+console.log('🌐 CORS: Allowed origins ->', [...allowedOrigins, '*.ngrok-free.app', 'sentra-navy*.vercel.app'].join(', '))
 console.log('✅ Server Status: Ready')
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 console.log('')

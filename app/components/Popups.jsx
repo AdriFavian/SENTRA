@@ -10,7 +10,7 @@ import Image from 'next/image'
 
 function Popups() {
   const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4001', {
-    extraHeaders: {
+    query: {
       'ngrok-skip-browser-warning': 'true'
     }
   })
