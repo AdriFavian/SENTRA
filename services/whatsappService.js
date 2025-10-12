@@ -287,7 +287,7 @@ Mohon segera konfirmasi apakah Anda akan menangani kecelakaan ini.`
         return []
       }
       
-      const message = `✅ *KECELAKAAN SUDAH DITANGANI*
+      const message = `✅ *KECELAKAAN SUDAH DITANGANI WHATSAPP*
 
 Kecelakaan yang terjadi pada:
 *Waktu:* ${new Date(accident.createdAt).toLocaleString('id-ID')}

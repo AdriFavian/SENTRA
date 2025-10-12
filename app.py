@@ -361,7 +361,7 @@ def video1():
 
 @app.route('/2')
 def video2():
-    video_path = "video/koteshore.mp4"  
+    video_path = "video/test1.mp4"  
     custom_text = "Koteshore"
     return Response(generate_frames(video_path, custom_text, camera_id='2', show_boxes=True), 
                    mimetype='multipart/x-mixed-replace; boundary=frame')

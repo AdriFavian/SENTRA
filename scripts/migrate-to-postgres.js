@@ -171,7 +171,7 @@ async function setupDatabase() {
         ('http://127.0.0.1:5000/2', -7.9797, 112.6304, true, 'Kota Malang'),
         ('http://127.0.0.1:5000/test', -7.9553, 112.6092, true, 'Kabupaten Malang'),
         ('http://stream.cctv.malangkota.go.id/WebRTCApp/streams/982131430615781858979987.m3u8?token=null', -7.9666, 112.6326, true, 'Kota Malang'),
-        ('https://cctvjss.jogjakota.go.id/atcs/ATCS_Lampu_Merah_SugengJeroni2.stream/chunklist_w1974210259.m3u8', -7.9666, 112.6326, true, 'Yogyakarta'),
+        ('https://cctvjss.jogjakota.go.id/atcs/ATCS_gondomanan.stream/chunklist_w410990223.m3u8', -7.9666, 112.6326, true, 'Yogyakarta'),
         ('https://streamcctv.padang.go.id:3000/stream/EkxXZHHp-cnNe-iHdQ-nTuJ-9gLkDScWQlis/channel/0/hlsll/live/index.m3u8?_HLS_msn=54&_HLS_part=10', -0.929511, 100.350342, true, 'Pantai Padang')
       `)
       console.log('✅ Sample CCTV data inserted')

@@ -40,9 +40,9 @@ async function main() {
   // Step 2: Instructions
   console.log('\n' + '='.repeat(50))
   console.log('📱 HOW TO GET YOUR CHAT ID:\n')
-  console.log('Option 1: Use @userinfobot')
+  console.log('Option 1: Use @Sentra_message_bot')
   console.log('  1. Open Telegram')
-  console.log('  2. Search for: @userinfobot')
+  console.log('  2. Search for: @Sentra_message_bot')
   console.log('  3. Send: /start')
   console.log('  4. Copy the number it gives you\n')
   

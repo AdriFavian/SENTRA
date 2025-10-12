@@ -137,7 +137,7 @@ Time: ${new Date().toLocaleString('id-ID')}`
   console.log('2. Users must start a conversation with your bot first')
   console.log('3. To get a user\'s chat ID, they need to send a message to the bot')
   console.log('4. For production, implement a /start command to register users')
-  console.log('\n💡 Tip: Use @userinfobot in Telegram to get your chat ID')
+  console.log('\n💡 Tip: Use @Sentra_message_bot in Telegram to get your chat ID')
 }
 
 // Run the test

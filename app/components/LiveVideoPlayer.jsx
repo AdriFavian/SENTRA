@@ -179,11 +179,12 @@ export default function LiveVideoPlayer({
   }
 
   const toggleFullscreen = () => {
-    const video = videoRef.current
-    if (!video) return
+    // Get the container element (works for both video and img)
+    const container = videoRef.current?.parentElement || imgRef.current?.parentElement
+    if (!container) return
 
     if (!document.fullscreenElement) {
-      video.requestFullscreen().catch(err => {
+      container.requestFullscreen().catch(err => {
         console.error('Fullscreen failed:', err)
       })
     } else {
@@ -297,15 +298,13 @@ export default function LiveVideoPlayer({
           )}
 
           <div className="flex items-center gap-3 ml-auto">
-
-            {!useMjpegFallback && (
-              <button
-                onClick={toggleFullscreen}
-                className="text-white hover:text-blue-400 transition"
-              >
-                <FiMaximize className="w-6 h-6" />
-              </button>
-            )}
+            <button
+              onClick={toggleFullscreen}
+              className="text-white hover:text-blue-400 transition"
+              title="Fullscreen"
+            >
+              <FiMaximize className="w-6 h-6" />
+            </button>
           </div>
         </div>
       </div>

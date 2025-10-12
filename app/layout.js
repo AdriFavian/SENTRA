@@ -13,7 +13,7 @@ const poppins = Poppins({
 })
 
 export const metadata = {
-  title: 'SENTRA - Smart Traffic Safety AI',
+  title: 'SENTRA - Smart Sensor-based Traffic Accident Alert',
   description: 'Real-time accident detection and traffic monitoring powered by AI',
   keywords: ['traffic safety', 'accident detection', 'AI monitoring', 'CCTV analytics'],
 }
