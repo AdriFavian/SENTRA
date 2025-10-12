@@ -51,13 +51,19 @@ export async function POST(request) {
 
     //initializing socket.io
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+      // Start with polling, upgrade to websocket
       transports: ['polling', 'websocket'],
+      // Reconnection settings
       reconnection: true,
       reconnectionAttempts: 3,
+      // Timeout settings
+      timeout: 10000,
+      // CORS credentials
+      withCredentials: true,
+      // Additional options for ngrok
       extraHeaders: {
         'ngrok-skip-browser-warning': 'true'
-      },
-      withCredentials: true
+      }
     })
     socket.emit('send-message', createdAccident)
 

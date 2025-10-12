@@ -24,14 +24,23 @@ export default function RealtimeAlerts() {
   useEffect(() => {
     // Connect to Socket.IO server
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4001', {
+      // Start with polling, upgrade to websocket
       transports: ['polling', 'websocket'],
+      // Reconnection settings
       reconnection: true,
       reconnectionDelay: 1000,
-      reconnectionAttempts: 10,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5,
+      // Timeout settings for ngrok
+      timeout: 20000,
+      // CORS credentials
+      withCredentials: true,
+      // Auto-upgrade to websocket
+      upgrade: true,
+      // Additional options for ngrok
       extraHeaders: {
         'ngrok-skip-browser-warning': 'true'
-      },
-      withCredentials: true
+      }
     })
 
     socketRef.current = socket

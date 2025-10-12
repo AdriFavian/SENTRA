@@ -7,8 +7,35 @@ const allowedOrigins = [
   'http://localhost:3000'
 ]
 
-// Create HTTP server for better ngrok compatibility
-const httpServer = createServer()
+// Create HTTP server with manual CORS handling for ngrok compatibility
+const httpServer = createServer((req, res) => {
+  const origin = req.headers.origin
+  
+  // Check if origin is allowed
+  const isAllowed = !origin || 
+    allowedOrigins.includes(origin) || 
+    origin.endsWith('.vercel.app') || 
+    origin.endsWith('.ngrok-free.app')
+  
+  // Set CORS headers BEFORE Socket.IO processes the request
+  if (isAllowed && origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin)
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, ngrok-skip-browser-warning')
+    res.setHeader('Access-Control-Allow-Credentials', 'true')
+    res.setHeader('Access-Control-Max-Age', '86400') // 24 hours
+  }
+  
+  // Handle preflight OPTIONS requests
+  if (req.method === 'OPTIONS') {
+    res.writeHead(200)
+    res.end()
+    return
+  }
+  
+  // Let Socket.IO handle other requests
+  // (Socket.IO will attach its handlers to this server)
+})
 
 const io = new Server(httpServer, {
   cors: {
@@ -16,11 +43,11 @@ const io = new Server(httpServer, {
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true)
       
-      const isAllowedNgrok = origin.endsWith('.ngrok-free.app') || origin.includes('ngrok')
-      const isAllowedVercel = origin.endsWith('.vercel.app') && origin.includes('sentra')
       const isAllowedOrigin = allowedOrigins.includes(origin)
+      const isAllowedVercel = origin.endsWith('.vercel.app') && origin.includes('sentra')
+      const isAllowedNgrok = origin.endsWith('.ngrok-free.app')
 
-      if (isAllowedOrigin || isAllowedNgrok || isAllowedVercel) {
+      if (isAllowedOrigin || isAllowedVercel || isAllowedNgrok) {
         return callback(null, true)
       }
 
@@ -28,15 +55,20 @@ const io = new Server(httpServer, {
       return callback(new Error(`Origin ${origin} not allowed by Socket.IO CORS config`))
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['ngrok-skip-browser-warning', 'Content-Type', 'Authorization'],
-    credentials: true,
-    optionsSuccessStatus: 200
+    allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
+    credentials: true
   },
-  // Important for ngrok compatibility
+  // Transport settings for ngrok
   transports: ['polling', 'websocket'],
   allowEIO3: true,
   pingTimeout: 60000,
-  pingInterval: 25000
+  pingInterval: 25000,
+  // Enable upgrade from polling to websocket
+  upgradeTimeout: 30000,
+  // Add path for Socket.IO
+  path: '/socket.io/',
+  // Serve client (optional, for debugging)
+  serveClient: false
 })
 
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
