@@ -1,4 +1,4 @@
-import connectDB from '@/utils/connectDB'
+import connectDB from '../utils/connectDB.js'
 import TelegramBot from 'node-telegram-bot-api'
 
 /**

@@ -25,6 +25,9 @@ export default function RealtimeAlerts() {
     // Connect to Socket.IO server
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4001', {
       transports: ['websocket', 'polling'],
+      extraHeaders: {
+        'ngrok-skip-browser-warning': 'true'
+      }
     })
 
     socketRef.current = socket

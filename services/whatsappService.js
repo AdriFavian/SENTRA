@@ -1,4 +1,4 @@
-import connectDB from '@/utils/connectDB'
+import connectDB from '../utils/connectDB.js'
 
 /**
  * WhatsApp Notification Service using Fonnte API

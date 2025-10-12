@@ -211,7 +211,9 @@ async function setupDatabase() {
       console.log('📝 Inserting sample Telegram contact data...')
       await client.query(`
         INSERT INTO telegram_contacts (cctv_id, chat_id, phone_number, name) VALUES
-        (1, '6287866301810', '087866301810', 'Emergency Contact')
+        (1, '7623040522', '087866301810', 'Nokurento'),
+        (1, '6388395418', '081234567890', 'Adri'),
+        (2, '5218284464', '081298765432', 'Fatma')
       `)
       console.log('✅ Sample Telegram contact data inserted')
     }
