@@ -9,7 +9,11 @@
     "lint": "next lint",
     "socket": "nodemon ./helpers/socket/socket.js",
     "telegram": "node ./helpers/telegram/telegramBot.js",
-    "telegram-bot": "node telegram-bot.js"
+    "telegram-bot": "node telegram-bot.js",
+    "backend": "node start-backend.js",
+    "deploy": "vercel --prod",
+    "deploy:preview": "vercel",
+    "update-vercel-env": "node update-vercel-env.js"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.19.2",
