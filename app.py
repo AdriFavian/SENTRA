@@ -13,9 +13,9 @@ import socketio
 import numpy as np
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)  # Global CORS
 
-# Socket.IO client to connect to Node.js server
+# Socket.IO client init
 sio = socketio.Client()
 
 try:
@@ -24,43 +24,37 @@ try:
 except Exception as e:
     print(f'❌ Failed to connect to Socket.IO server: {e}')
 
-# make a folder named snapshot to save the snap while the accident is detected
+# Ensure snapshot storage exists
 snapshot_dir = "public/snapshots"
 os.makedirs(snapshot_dir, exist_ok=True)
 
-frame_count = 0  # Initialize frame_count outside of any function
+frame_count = 0  # Global frame counter
 
 model = YOLO("test5.pt")
 
 frame_skip = 5
 
-# YOLO class names - actual classes from your model
+# Model class definitions
 classnames = ["benturan", "crash", "kendaraan-besar", "manusia", "mobil", "roda-2", "roda-4"]
 
-# Accident-related classes
+# Target classes for detection
 ACCIDENT_CLASSES = ["benturan", "crash"]
 
-# Store active streams
+# Active stream registry
 active_streams = {}
 
-#this function sends http post request to the server
+# Sync accident event with upstream API
 def send_accident_data_to_server(accident_data, headers=None):
-    # Define the API endpoint
     api_endpoint = "http://localhost:3000/api/accidents"
-
-    #Convert the data to JSON
     json_payload = json.dumps(accident_data)
-
-    # Send the POST request to the server with the JSON payload
     headers = {'Content-Type': 'application/json'}
 
     response = requests.post(api_endpoint, data=json_payload, headers=headers)
 
-    # Check the server's response
     if response.status_code == 201:
         print("✅ Accident data sent successfully to API!")
         
-        # Also emit to Socket.IO for real-time updates
+        # Real-time socket broadcast
         try:
             sio.emit('send-message', response.json())
             print("✅ Accident alert sent via Socket.IO!")
@@ -192,8 +186,7 @@ def generate_frames(video_path, custom_text, camera_id=None, show_boxes=True):
 
 def generate_frames_from_mjpeg(stream_url, custom_text, camera_id=None, show_boxes=True, cctv_ip=None):
     """
-    Process external MJPEG streams with YOLO detection
-    Supports streams like http://192.168.3.194:8080/?action=stream
+    MJPEG stream proxy with YOLO inference pipeline.
     """
     global frame_count
     frame_count = 0
@@ -323,7 +316,7 @@ def generate_frames_from_mjpeg(stream_url, custom_text, camera_id=None, show_box
     cap.release()
 
 
-# API endpoint to get available streams
+# Stream registry endpoint
 @app.route('/api/streams')
 def get_streams():
     return jsonify({
@@ -335,7 +328,7 @@ def get_streams():
     })
 
 
-# API endpoint to check server status
+# Health check
 @app.route('/api/status')
 def status():
     return jsonify({
@@ -351,7 +344,7 @@ def index():
     return render_template('index.html')
 
 
-# hosting the video in the different path and passing the video link to the path.
+# Video stream routes
 @app.route('/1')
 def video1():
     video_path = "video/mainan1.mp4"  
@@ -374,7 +367,7 @@ def video3():
                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
-# Generic stream endpoint with camera ID
+# Dynamic stream handler
 @app.route('/stream/<camera_id>')
 def stream(camera_id):
     # In production, you would map camera_id to actual video sources
@@ -384,12 +377,11 @@ def stream(camera_id):
                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
-# Proxy endpoint for external MJPEG streams with detection
+# MJPEG proxy with inference
 @app.route('/proxy')
 def proxy_stream():
     """
-    Proxy external MJPEG streams through Flask for YOLO detection
-    Usage: /proxy?url=http://192.168.3.194:8080/?action=stream&camera_id=camera1
+    Proxy external MJPEG streams through Flask for YOLO detection.
     """
     import urllib.parse
     
@@ -409,14 +401,14 @@ def proxy_stream():
                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
-# Cleanup on shutdown
+# App teardown
 @app.teardown_appcontext
 def cleanup(exception=None):
     if sio.connected:
         sio.disconnect()
 
 
-# hosting the entire file in the port 5000 (changed from 49)
+# Bootstrap
 if __name__ == '__main__':
     print("🚀 Starting Flask AI Backend...")
     print("📹 YOLO Model loaded: test5.pt")
